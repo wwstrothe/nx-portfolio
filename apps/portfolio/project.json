@@ -1,5 +1,5 @@
 {
-  "name": "William Strothe Portfolio",
+  "name": "portfolio",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "portfolio",
@@ -8,11 +8,15 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/portfolio",
         "browser": "apps/portfolio/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": [
+          "zone.js"
+        ],
         "tsConfig": "apps/portfolio/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -21,7 +25,9 @@
             "input": "apps/portfolio/public"
           }
         ],
-        "styles": ["apps/portfolio/src/styles.scss"]
+        "styles": [
+          "apps/portfolio/src/styles.scss"
+        ]
       },
       "configurations": {
         "production": {
@@ -48,17 +54,16 @@
       "defaultConfiguration": "production"
     },
     "serve": {
-      "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
         "port": 4300
       },
       "configurations": {
         "production": {
-          "buildTarget": "William Strothe Portfolio:build:production"
+          "buildTarget": "portfolio:build:production"
         },
         "development": {
-          "buildTarget": "William Strothe Portfolio:build:development"
+          "buildTarget": "portfolio:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -66,7 +71,7 @@
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",
       "options": {
-        "buildTarget": "William Strothe Portfolio:build"
+        "buildTarget": "portfolio:build"
       }
     },
     "lint": {
@@ -74,17 +79,18 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "apps/portfolio/jest.config.ts",
         "tsConfig": "apps/portfolio/tsconfig.spec.json"
       }
     },
     "serve-static": {
-      "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "William Strothe Portfolio:build",
+        "buildTarget": "portfolio:build:production",
         "port": 4300,
         "staticFilePath": "dist/apps/portfolio/browser",
         "spa": true
