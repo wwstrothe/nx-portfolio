@@ -36,7 +36,7 @@ jobs:
       matrix:
         include:
           - nxApp: portfolio
-            cfProject: william-strothe
+            cfProject: strothe-portfolio
             distDir: dist/apps/portfolio/browser
 
 
@@ -51,30 +51,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec nx build ${{ matrix.nxApp }} --configuration=production
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
 
-      # Preview deploy for any non-beta branch
-      - name: Deploy Preview (${{ matrix.nxApp }})
-        if: ${{ github.ref_name != 'beta' }}
+      - name: Build (${{ matrix.nxApp }})
+        run: pnpm exec nx build ${{ matrix.nxApp }} --configuration=production
+
+      - name: Deploy Preview/Beta (${{ matrix.nxApp }} -> ${{ matrix.cfProject }})
         run: |
-          npx wrangler pages deploy "${{ matrix.distDir }}" \
+          pnpm dlx wrangler@3 pages deploy "${{ matrix.distDir }}" \
             --project-name="${{ matrix.cfProject }}" \
             --branch="${{ github.ref_name }}"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      # Beta deploy when branch is beta
-      - name: Deploy Beta (${{ matrix.nxApp }})
-        if: ${{ github.ref_name == 'beta' }}
-        run: |
-          npx wrangler pages deploy "${{ matrix.distDir }}" \
-            --project-name="${{ matrix.cfProject }}" \
-            --branch="beta"
-
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -92,7 +81,7 @@ jobs:
       matrix:
         include:
           - nxApp: portfolio
-            cfProject: william-strothe
+            cfProject: strothe-portfolio
             distDir: dist/apps/portfolio/browser
 
     steps:
@@ -106,21 +95,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec nx build ${{ matrix.nxApp }} --configuration=production
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
 
-      - name: Deploy Production (${{ matrix.nxApp }})
+      - name: Build (${{ matrix.nxApp }})
+        run: pnpm exec nx build ${{ matrix.nxApp }} --configuration=production
+
+      - name: Deploy Production (${{ matrix.nxApp }} -> ${{ matrix.cfProject }})
         run: |
-          npx wrangler pages deploy "${{ matrix.distDir }}" \
+          pnpm dlx wrangler@3 pages deploy "${{ matrix.distDir }}" \
             --project-name="${{ matrix.cfProject }}"
 
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-  # Helpful failure message if someone forgets the confirmation string
   production-confirmation-guard:
     if: ${{ github.event_name == 'workflow_dispatch' && (inputs.confirm_production != 'deploy' || github.ref_name != 'main') }}
     runs-on: ubuntu-latest

@@ -16,8 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  main:
+  ci:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,12 +32,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
 
-      - run: pnpm exec nx run-many -t lint test build e2e
+      # Fast checks (always)
+      - name: Lint
+        run: pnpm exec nx lint portfolio
 
-      - run: pnpm exec nx fix-ci
+      - name: Unit tests
+        run: pnpm exec nx test portfolio
+
+      - name: Build
+        run: pnpm exec nx build portfolio --configuration=production
+
+      # Heavy checks (only on push to main/beta)
+      - name: Install Playwright (Chromium only)
+        if: ${{ github.event_name == 'push' }}
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E
+        if: ${{ github.event_name == 'push' }}
+        run: pnpm exec nx e2e portfolio-e2e
+
+      - name: Nx fix-ci
         if: always()
+        run: pnpm exec nx fix-ci
