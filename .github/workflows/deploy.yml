@@ -14,11 +14,13 @@ on:
         required: true
         default: ''
 
+
 permissions:
   contents: read
 
 concurrency:
   group: deploy-${{ github.workflow }}-${{ github.ref }}
+
   cancel-in-progress: true
 
 jobs:
@@ -36,6 +38,7 @@ jobs:
           - nxApp: portfolio
             cfProject: william-strothe
             distDir: dist/apps/portfolio/browser
+
 
     steps:
       - uses: actions/checkout@v4
@@ -71,6 +74,7 @@ jobs:
           npx wrangler pages deploy "${{ matrix.distDir }}" \
             --project-name="${{ matrix.cfProject }}" \
             --branch="beta"
+
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -111,6 +115,7 @@ jobs:
         run: |
           npx wrangler pages deploy "${{ matrix.distDir }}" \
             --project-name="${{ matrix.cfProject }}"
+
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
