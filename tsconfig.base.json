@@ -15,7 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@portfolio/shared/config": ["libs/shared/config/src/index.ts"]
+      "@portfolio/shared/config": ["libs/shared/config/src/index.ts"],
+      "@portfolio/shared/firebase-core": [
+        "libs/shared/firebase-core/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
