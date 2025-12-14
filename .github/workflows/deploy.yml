@@ -41,7 +41,7 @@ jobs:
 
       - name: Deploy Preview (william-strothe)
         run: |
-          npx wrangler pages deploy dist/apps/william-strothe \
+          npx wrangler pages deploy dist/apps/william-strothe/browser \
             --project-name=william-strothe \
             --branch=${{ github.ref_name }}
         env:
@@ -71,7 +71,7 @@ jobs:
 
       - name: Deploy Beta (william-strothe)
         run: |
-          npx wrangler pages deploy dist/apps/william-strothe \
+          npx wrangler pages deploy dist/apps/william-strothe/browser \
             --project-name=william-strothe \
             --branch=beta
         env:
@@ -101,7 +101,7 @@ jobs:
 
       - name: Deploy Production (william-strothe)
         run: |
-          npx wrangler pages deploy dist/apps/william-strothe \
+          npx wrangler pages deploy dist/apps/william-strothe/browser \
             --project-name=william-strothe
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -133,7 +133,7 @@ jobs:
 
       - name: Deploy Preview (portfolio)
         run: |
-          npx wrangler pages deploy dist/apps/portfolio \
+          npx wrangler pages deploy dist/apps/portfolio/browser \
             --project-name=portfolio \
             --branch=${{ github.ref_name }}
         env:
@@ -163,7 +163,7 @@ jobs:
 
       - name: Deploy Beta (portfolio)
         run: |
-          npx wrangler pages deploy dist/apps/portfolio \
+          npx wrangler pages deploy dist/apps/portfolio/browser \
             --project-name=portfolio \
             --branch=beta
         env:
@@ -193,7 +193,7 @@ jobs:
 
       - name: Deploy Production (portfolio)
         run: |
-          npx wrangler pages deploy dist/apps/portfolio \
+          npx wrangler pages deploy dist/apps/portfolio/browser \
             --project-name=portfolio
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
