@@ -1,8 +1,8 @@
 {
-  "name": "portfolio",
+  "name": "William Strothe Portfolio",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "prefix": "app",
+  "prefix": "portfolio",
   "sourceRoot": "apps/portfolio/src",
   "tags": [],
   "targets": {
@@ -21,12 +21,7 @@
             "input": "apps/portfolio/public"
           }
         ],
-        "styles": ["apps/portfolio/src/styles.scss"],
-        "server": "apps/portfolio/src/main.server.ts",
-        "ssr": {
-          "entry": "apps/portfolio/src/server.ts"
-        },
-        "outputMode": "server"
+        "styles": ["apps/portfolio/src/styles.scss"]
       },
       "configurations": {
         "production": {
@@ -55,12 +50,15 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "port": 4300
+      },
       "configurations": {
         "production": {
-          "buildTarget": "portfolio:build:production"
+          "buildTarget": "William Strothe Portfolio:build:production"
         },
         "development": {
-          "buildTarget": "portfolio:build:development"
+          "buildTarget": "William Strothe Portfolio:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -68,7 +66,7 @@
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",
       "options": {
-        "buildTarget": "portfolio:build"
+        "buildTarget": "William Strothe Portfolio:build"
       }
     },
     "lint": {
@@ -86,8 +84,8 @@
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "portfolio:build",
-        "port": 4200,
+        "buildTarget": "William Strothe Portfolio:build",
+        "port": 4300,
         "staticFilePath": "dist/apps/portfolio/browser",
         "spa": true
       }
