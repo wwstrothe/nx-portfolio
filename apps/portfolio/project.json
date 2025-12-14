@@ -2,17 +2,21 @@
   "name": "portfolio",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "prefix": "app",
+  "prefix": "portfolio",
   "sourceRoot": "apps/portfolio/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/portfolio",
         "browser": "apps/portfolio/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": [
+          "zone.js"
+        ],
         "tsConfig": "apps/portfolio/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -21,12 +25,9 @@
             "input": "apps/portfolio/public"
           }
         ],
-        "styles": ["apps/portfolio/src/styles.scss"],
-        "server": "apps/portfolio/src/main.server.ts",
-        "ssr": {
-          "entry": "apps/portfolio/src/server.ts"
-        },
-        "outputMode": "server"
+        "styles": [
+          "apps/portfolio/src/styles.scss"
+        ]
       },
       "configurations": {
         "production": {
@@ -53,8 +54,10 @@
       "defaultConfiguration": "production"
     },
     "serve": {
-      "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "port": 4300
+      },
       "configurations": {
         "production": {
           "buildTarget": "portfolio:build:production"
@@ -76,18 +79,19 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "apps/portfolio/jest.config.ts",
         "tsConfig": "apps/portfolio/tsconfig.spec.json"
       }
     },
     "serve-static": {
-      "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "portfolio:build",
-        "port": 4200,
+        "buildTarget": "portfolio:build:production",
+        "port": 4300,
         "staticFilePath": "dist/apps/portfolio/browser",
         "spa": true
       }

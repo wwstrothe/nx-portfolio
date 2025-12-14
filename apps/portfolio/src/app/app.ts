@@ -4,10 +4,10 @@ import { NxWelcome } from './nx-welcome';
 
 @Component({
   imports: [NxWelcome, RouterModule],
-  selector: 'app-root',
+  selector: 'portfolio-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  protected title = 'portfolio';
+  protected title = 'William Strothe Portfolio';
 }
