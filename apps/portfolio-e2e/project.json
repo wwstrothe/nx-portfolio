@@ -1,0 +1,9 @@
+{
+  "name": "William Strothe Portfolio-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/portfolio-e2e/src",
+  "implicitDependencies": ["William Strothe Portfolio"],
+  "// targets": "to see all targets run: nx show project William Strothe Portfolio-e2e --web",
+  "targets": {}
+}
