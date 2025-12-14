@@ -1,6 +1,7 @@
 name: Deploy (Cloudflare Pages)
 
 on:
+  # Auto-deploy previews and beta on push (but NOT main)
   push:
     branches:
       - 'main'
