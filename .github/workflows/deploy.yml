@@ -36,7 +36,7 @@ jobs:
       matrix:
         include:
           - nxApp: portfolio
-            cfProject: strothe-portfolio
+            cfProject: william-strothe
             distDir: dist/apps/portfolio/browser
 
 
@@ -81,7 +81,7 @@ jobs:
       matrix:
         include:
           - nxApp: portfolio
-            cfProject: strothe-portfolio
+            cfProject: william-strothe
             distDir: dist/apps/portfolio/browser
 
     steps:
