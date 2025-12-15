@@ -1,6 +1,8 @@
 export default {
   displayName: 'William Strothe Portfolio',
   preset: '../../jest.preset.js',
+  testEnvironment: 'jsdom',
+  setupFiles: ['<rootDir>/../../tools/test/jest.setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/apps/portfolio',
   transform: {
