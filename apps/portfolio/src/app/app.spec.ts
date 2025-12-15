@@ -1,29 +1,33 @@
+import { JsonPipe } from '@angular/common';
+import { signal } from '@angular/core';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
 
 import { App } from './app';
 
-// --- Mocks (keep Firebase out of component tests) -----------------------------
+// --- Keep Firebase/Firestore OUT of the component tests -----------------------
 
-type TestDoc = { message: string; createdAt: number };
-type WithId<T> = T & { id: string };
+type TestDoc = {
+  message: string;
+  createdAt: number;
+  updatedAt?: number;
+};
 
-type SetDocFn = (path: string, data: unknown, options?: unknown) => Promise<void>;
+type TestDocWithId = TestDoc & { id: string };
+
+type EnvKey = 'emulator' | 'prod';
+
+type EnvVm = {
+  key: EnvKey;
+  label: string;
+  tools: any | null;
+  docs: ReturnType<typeof signal<TestDocWithId[]>>;
+  sortedDocs: unknown;
+};
 
 const getFirestoreClientMock = jest.fn();
-
-const listenEmulator$ = new Subject<Array<WithId<TestDoc>>>();
-const listenProd$ = new Subject<Array<WithId<TestDoc>>>();
-
-const emulatorSetDocMock = jest.fn<ReturnType<SetDocFn>, Parameters<SetDocFn>>(
-  async () => undefined
-);
-const prodSetDocMock = jest.fn<ReturnType<SetDocFn>, Parameters<SetDocFn>>(
-  async () => undefined
-);
-
 const createWebFirestoreAdapterMock = jest.fn();
+const createCollectionToolsMock = jest.fn();
 
 jest.mock('@portfolio/shared/firebase-core', () => ({
   getFirestoreClient: (...args: unknown[]) => getFirestoreClientMock(...args),
@@ -32,29 +36,37 @@ jest.mock('@portfolio/shared/firebase-core', () => ({
 jest.mock('@portfolio/shared/firestore', () => ({
   createWebFirestoreAdapter: (...args: unknown[]) =>
     createWebFirestoreAdapterMock(...args),
+  createCollectionTools: (...args: unknown[]) => createCollectionToolsMock(...args),
 }));
 
 describe('App', () => {
+  let emulatorDocsSig: ReturnType<typeof signal<TestDocWithId[]>>;
+  let prodDocsSig: ReturnType<typeof signal<TestDocWithId[]>>;
+
+  let emulatorTools: { docs: typeof emulatorDocsSig; add: jest.Mock; update: jest.Mock; remove: jest.Mock };
+  let prodTools: { docs: typeof prodDocsSig; add: jest.Mock; update: jest.Mock; remove: jest.Mock };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    // Ensure crypto exists (some jsdom environments stub it strangely)
-    if (!globalThis.crypto) {
-      const { webcrypto } = await import('node:crypto');
-      (globalThis as any).crypto = webcrypto as any;
-    }
+    emulatorDocsSig = signal<TestDocWithId[]>([]);
+    prodDocsSig = signal<TestDocWithId[]>([]);
 
-    // Ensure randomUUID exists and is stable for tests
-    if (!('randomUUID' in globalThis.crypto)) {
-      Object.defineProperty(globalThis.crypto, 'randomUUID', {
-        value: jest.fn(() => 'uuid-123'),
-        writable: true,
-      });
-    } else {
-      jest.spyOn(globalThis.crypto as any, 'randomUUID').mockReturnValue('uuid-123');
-    }
+    emulatorTools = {
+      docs: emulatorDocsSig,
+      add: jest.fn(async () => undefined),
+      update: jest.fn(async () => undefined),
+      remove: jest.fn(async () => undefined),
+    };
 
-    // Return two different "firestore" markers depending on allowEmulators
+    prodTools = {
+      docs: prodDocsSig,
+      add: jest.fn(async () => undefined),
+      update: jest.fn(async () => undefined),
+      remove: jest.fn(async () => undefined),
+    };
+
+    // getFirestoreClient(projectKey, { allowEmulators })
     getFirestoreClientMock.mockImplementation(
       (_projectKey: unknown, opts?: { allowEmulators?: boolean }) => ({
         __firestore: true,
@@ -62,32 +74,29 @@ describe('App', () => {
       })
     );
 
-    // Return two different adapters depending on allowEmulators
-    createWebFirestoreAdapterMock.mockImplementation((firestore: any) => {
-      if (firestore?.allowEmulators) {
-        return {
-          listenCollection$: jest.fn(() => listenEmulator$.asObservable()),
-          setDoc: emulatorSetDocMock,
-        };
-      }
-      return {
-        listenCollection$: jest.fn(() => listenProd$.asObservable()),
-        setDoc: prodSetDocMock,
-      };
+    // createWebFirestoreAdapter(firestore) -> adapter marker
+    createWebFirestoreAdapterMock.mockImplementation((firestore: any) => ({
+      __adapter: true,
+      allowEmulators: !!firestore?.allowEmulators,
+    }));
+
+    // createCollectionTools({ db, collectionPath, initialValue }) -> our fake tools
+    createCollectionToolsMock.mockImplementation((args: any) => {
+      if (args?.db?.allowEmulators) return emulatorTools;
+      return prodTools;
     });
 
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, JsonPipe],
     }).compileComponents();
   });
 
-  it('renders both columns and starts listening to both collections', () => {
+  it('renders both columns and initializes tools (emulator + prod) in dev mode', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    // It should create two firestore clients: emulator + prod
+    // two db clients: emulator + prod
     expect(getFirestoreClientMock).toHaveBeenCalledTimes(2);
-
     expect(getFirestoreClientMock).toHaveBeenCalledWith('personal-project', {
       allowEmulators: true,
     });
@@ -95,126 +104,180 @@ describe('App', () => {
       allowEmulators: false,
     });
 
+    // two adapters
+    expect(createWebFirestoreAdapterMock).toHaveBeenCalledTimes(2);
+
+    // two toolsets
+    expect(createCollectionToolsMock).toHaveBeenCalledTimes(2);
+    expect(createCollectionToolsMock.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        collectionPath: 'test',
+        initialValue: [],
+      })
+    );
+    expect(createCollectionToolsMock.mock.calls[1][0]).toEqual(
+      expect.objectContaining({
+        collectionPath: 'test',
+        initialValue: [],
+      })
+    );
+
     const h2s = fixture.debugElement.queryAll(By.css('h2'));
     expect(h2s.map((d) => d.nativeElement.textContent.trim())).toEqual([
       'Emulator',
       'Production',
     ]);
 
+    // One "Add document" button per env section (no docs yet, so no quick edit/delete)
     const buttons = fixture.debugElement.queryAll(By.css('button'));
     expect(buttons).toHaveLength(2);
-    expect(buttons[0].nativeElement.textContent).toContain('Emulator');
-    expect(buttons[1].nativeElement.textContent).toContain('Prod');
+    expect(buttons[0].nativeElement.textContent).toContain('Add document');
+    expect(buttons[1].nativeElement.textContent).toContain('Add document');
+
+    const liveCounts = fixture.debugElement.queryAll(By.css('span b'));
+    expect(liveCounts.map((d) => d.nativeElement.textContent.trim())).toEqual(['0', '0']);
   });
 
-  it('updates emulatorDocs when emulator listener emits', () => {
+  it('updates the Emulator column when emulator docs signal changes', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    listenEmulator$.next([
-      { id: 'e1', message: 'hello emulator', createdAt: 1 },
-    ]);
+    emulatorDocsSig.set([{ id: 'e1', message: 'hello emulator', createdAt: 1 }]);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.emulatorDocs()).toEqual([
-      { id: 'e1', message: 'hello emulator', createdAt: 1 },
-    ]);
+    // component-level view model uses the tools.docs signal, so it should reflect it
+    const envs = fixture.componentInstance.envs as unknown as EnvVm[];
+    const emulatorEnv = envs.find((e) => e.key === 'emulator')!;
+    const prodEnv = envs.find((e) => e.key === 'prod')!;
 
-    expect(fixture.componentInstance.prodDocs()).toEqual([]);
+    expect(emulatorEnv.docs()).toEqual([{ id: 'e1', message: 'hello emulator', createdAt: 1 }]);
+    expect(prodEnv.docs()).toEqual([]);
+
+    // Live docs counts should be [1, 0]
+    const liveCounts = fixture.debugElement.queryAll(By.css('span b'));
+    expect(liveCounts.map((d) => d.nativeElement.textContent.trim())).toEqual(['1', '0']);
   });
 
-  it('updates prodDocs when prod listener emits', () => {
+  it('updates the Production column when prod docs signal changes', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    listenProd$.next([{ id: 'p1', message: 'hello prod', createdAt: 2 }]);
+    prodDocsSig.set([{ id: 'p1', message: 'hello prod', createdAt: 2 }]);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.prodDocs()).toEqual([
-      { id: 'p1', message: 'hello prod', createdAt: 2 },
-    ]);
+    const envs = fixture.componentInstance.envs as unknown as EnvVm[];
+    const emulatorEnv = envs.find((e) => e.key === 'emulator')!;
+    const prodEnv = envs.find((e) => e.key === 'prod')!;
 
-    expect(fixture.componentInstance.emulatorDocs()).toEqual([]);
+    expect(prodEnv.docs()).toEqual([{ id: 'p1', message: 'hello prod', createdAt: 2 }]);
+    expect(emulatorEnv.docs()).toEqual([]);
+
+    const liveCounts = fixture.debugElement.queryAll(By.css('span b'));
+    expect(liveCounts.map((d) => d.nativeElement.textContent.trim())).toEqual(['0', '1']);
   });
 
-  it(
-    'clicking emulator button calls setDoc on emulator adapter with test/{uuid}',
-    fakeAsync(() => {
-      const fixture = TestBed.createComponent(App);
-      fixture.detectChanges();
-
-      const buttons = fixture.debugElement.queryAll(By.css('button'));
-
-      // Trigger click through Angular
-      buttons[0].triggerEventHandler('click', new MouseEvent('click'));
-      fixture.detectChanges();
-
-      // Flush the Promise from setDoc
-      tick();
-
-      expect(emulatorSetDocMock).toHaveBeenCalledTimes(1);
-
-      const calls = emulatorSetDocMock.mock.calls as Array<[string, any, any?]>;
-      const [path, payload] = calls[0];
-
-      expect(path).toBe('test/uuid-123');
-      expect(payload).toEqual(
-        expect.objectContaining({
-          message: expect.stringContaining('Hello from Angular (Emulator)'),
-          createdAt: expect.any(Number),
-        })
-      );
-
-      expect(prodSetDocMock).not.toHaveBeenCalled();
-    })
-  );
-
-  it(
-    'clicking prod button calls setDoc on prod adapter with test/{uuid}',
-    fakeAsync(() => {
-      const fixture = TestBed.createComponent(App);
-      fixture.detectChanges();
-
-      const buttons = fixture.debugElement.queryAll(By.css('button'));
-
-      buttons[1].triggerEventHandler('click', new MouseEvent('click'));
-      fixture.detectChanges();
-
-      tick();
-
-      expect(prodSetDocMock).toHaveBeenCalledTimes(1);
-
-      const calls = prodSetDocMock.mock.calls as Array<[string, any, any?]>;
-      const [path, payload] = calls[0];
-
-      expect(path).toBe('test/uuid-123');
-      expect(payload).toEqual(
-        expect.objectContaining({
-          message: expect.stringContaining('Hello from Angular (Prod)'),
-          createdAt: expect.any(Number),
-        })
-      );
-
-      expect(emulatorSetDocMock).not.toHaveBeenCalled();
-    })
-  );
-
-  it('unsubscribes both listeners on destroy', () => {
+  it('clicking Emulator "Add document" calls env.tools.add with expected payload', fakeAsync(() => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const component = fixture.componentInstance as any;
+    const envs = fixture.componentInstance.envs as any[];
+    const emulatorEnv = envs.find((e) => e.key === 'emulator');
 
-    const emulatorUnsub = jest.fn();
-    const prodUnsub = jest.fn();
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    // first section is Emulator
+    buttons[0].triggerEventHandler('click', new MouseEvent('click'));
+    tick(); // resolve async addDoc()
 
-    // Replace internal subs with our spies
-    component.emulatorSub = { unsubscribe: emulatorUnsub };
-    component.prodSub = { unsubscribe: prodUnsub };
+    expect(emulatorTools.add).toHaveBeenCalledTimes(1);
 
-    fixture.destroy();
+    const [payload] = emulatorTools.add.mock.calls[0] as [TestDoc];
+    expect(payload).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('Hello from Angular (Emulator)'),
+        createdAt: expect.any(Number),
+      })
+    );
 
-    expect(emulatorUnsub).toHaveBeenCalledTimes(1);
-    expect(prodUnsub).toHaveBeenCalledTimes(1);
+    // sanity: we really clicked emulator env
+    expect(emulatorEnv.label).toBe('Emulator');
+    expect(prodTools.add).not.toHaveBeenCalled();
+  }));
+
+  it('clicking Production "Add document" calls env.tools.add with expected payload', fakeAsync(() => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const envs = fixture.componentInstance.envs as any[];
+    const prodEnv = envs.find((e) => e.key === 'prod');
+
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    // second section is Production
+    buttons[1].triggerEventHandler('click', new MouseEvent('click'));
+    tick();
+
+    expect(prodTools.add).toHaveBeenCalledTimes(1);
+
+    const [payload] = prodTools.add.mock.calls[0] as [TestDoc];
+    expect(payload).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('Hello from Angular (Production)'),
+        createdAt: expect.any(Number),
+      })
+    );
+
+    expect(prodEnv.label).toBe('Production');
+    expect(emulatorTools.add).not.toHaveBeenCalled();
+  }));
+
+  it('renders Quick edit / Delete buttons when docs exist and calls update/remove', fakeAsync(() => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    // Put one doc in prod so we get the two action buttons rendered inside that section
+    prodDocsSig.set([{ id: 'p1', message: 'm1', createdAt: 1 }]);
+    fixture.detectChanges();
+
+    // Buttons now:
+    // - 2x "Add document"
+    // - 1x "Quick edit" (for p1)
+    // - 1x "Delete" (for p1)
+    const allButtons = fixture.debugElement.queryAll(By.css('button'));
+    const texts = allButtons.map((b) => b.nativeElement.textContent.trim());
+    expect(texts).toEqual(
+      expect.arrayContaining(['Add document', 'Add document', 'Quick edit', 'Delete'])
+    );
+
+    // Click Quick edit then Delete (for the prod item)
+    const quickEditBtn = allButtons.find(
+      (b) => b.nativeElement.textContent.trim() === 'Quick edit'
+    )!;
+    const deleteBtn = allButtons.find(
+      (b) => b.nativeElement.textContent.trim() === 'Delete'
+    )!;
+
+    quickEditBtn.triggerEventHandler('click', new MouseEvent('click'));
+    tick();
+
+    expect(prodTools.update).toHaveBeenCalledTimes(1);
+    expect(prodTools.update.mock.calls[0][0]).toBe('p1');
+    expect(prodTools.update.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        message: 'm1|',
+        updatedAt: expect.any(Number),
+      })
+    );
+
+    deleteBtn.triggerEventHandler('click', new MouseEvent('click'));
+    tick();
+
+    expect(prodTools.remove).toHaveBeenCalledTimes(1);
+    expect(prodTools.remove).toHaveBeenCalledWith('p1');
+  }));
+
+  it('destroy does not throw', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    expect(() => fixture.destroy()).not.toThrow();
   });
 });
