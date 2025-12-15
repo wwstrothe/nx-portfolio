@@ -37,7 +37,7 @@ describe('workspaceConfig', () => {
           authDomain: expect.any(String),
           projectId: expect.any(String),
           storageBucket: expect.any(String),
-          messageingSenderId: expect.any(String),
+          messagingSenderId: expect.any(String),
           appId: expect.any(String),
           measurementId: expect.any(String),
         })

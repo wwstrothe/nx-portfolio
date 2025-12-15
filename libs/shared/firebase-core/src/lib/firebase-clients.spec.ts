@@ -8,33 +8,7 @@ import {
   getFirestoreClient,
 } from './firebase-clients';
 
-import type {
-  FirebaseProjectKey,
-  WorkspaceConfig,
-} from '@portfolio/shared/config';
-
-/* ======================================================
-   Firebase SDK mocks
-   ====================================================== */
-
-const mockApp = { name: 'portfolio' } as FirebaseApp;
-const mockFirestore = {} as Firestore;
-const mockAuth = {} as Auth;
-
-jest.mock('firebase/app', () => ({
-  getApps: jest.fn(() => []),
-  initializeApp: jest.fn(() => mockApp),
-}));
-
-jest.mock('firebase/firestore', () => ({
-  getFirestore: jest.fn(() => mockFirestore),
-  connectFirestoreEmulator: jest.fn(),
-}));
-
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => mockAuth),
-  connectAuthEmulator: jest.fn(),
-}));
+import type { FirebaseProjectKey, WorkspaceConfig } from '@portfolio/shared/config';
 
 /* ======================================================
    Test config
@@ -62,18 +36,79 @@ const testConfig: WorkspaceConfig = {
 };
 
 /* ======================================================
+   Firebase SDK mocks (INLINE – no hoisting issues)
+   ====================================================== */
+
+const mockApp = { name: 'portfolio' } as FirebaseApp;
+const mockFirestore = {} as Firestore;
+const mockAuth = {} as Auth;
+
+jest.mock('firebase/app', () => ({
+  getApps: jest.fn(() => []),
+  initializeApp: jest.fn(() => mockApp),
+}));
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(() => mockFirestore),
+  connectFirestoreEmulator: jest.fn(),
+}));
+
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(() => mockAuth),
+  connectAuthEmulator: jest.fn(),
+}));
+
+/* ======================================================
+   Helpers (support flexible signatures safely)
+   ====================================================== */
+
+function callGetFirebaseClients(
+  projectKey: FirebaseProjectKey,
+  config: WorkspaceConfig,
+  allowEmulators?: boolean
+) {
+  return (getFirebaseClients as any)(
+    projectKey,
+    config,
+    allowEmulators === undefined ? undefined : { allowEmulators }
+  );
+}
+
+function callGetFirestoreClient(
+  projectKey: FirebaseProjectKey,
+  allowEmulators?: boolean
+) {
+  return (getFirestoreClient as any)(
+    projectKey,
+    allowEmulators === undefined ? undefined : { allowEmulators }
+  );
+}
+
+function callGetAuthClient(
+  projectKey: FirebaseProjectKey,
+  allowEmulators?: boolean
+) {
+  return (getAuthClient as any)(
+    projectKey,
+    allowEmulators === undefined ? undefined : { allowEmulators }
+  );
+}
+
+/* ======================================================
    Tests
    ====================================================== */
 
 describe('firebase-clients', () => {
-  const projectKey = 'portfolio' as FirebaseProjectKey;
+  const projectKey = Object.keys(
+    testConfig.firebase.projects
+  )[0] as FirebaseProjectKey;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('initializes firebase app, firestore, and auth for a project', () => {
-    const clients = getFirebaseClients(projectKey, testConfig);
+    const clients = callGetFirebaseClients(projectKey, testConfig, false);
 
     expect(clients.app).toBe(mockApp);
     expect(clients.firestore).toBe(mockFirestore);
@@ -81,8 +116,8 @@ describe('firebase-clients', () => {
   });
 
   it('caches clients per project key', () => {
-    const first = getFirebaseClients(projectKey, testConfig);
-    const second = getFirebaseClients(projectKey, testConfig);
+    const first = callGetFirebaseClients(projectKey, testConfig, false);
+    const second = callGetFirebaseClients(projectKey, testConfig, false);
 
     expect(first).toBe(second);
   });
@@ -91,7 +126,7 @@ describe('firebase-clients', () => {
     const { connectFirestoreEmulator } = await import('firebase/firestore');
     const { connectAuthEmulator } = await import('firebase/auth');
 
-    getFirebaseClients(projectKey, testConfig);
+    callGetFirebaseClients(projectKey, testConfig, true);
 
     expect(connectFirestoreEmulator).toHaveBeenCalledWith(
       mockFirestore,
@@ -107,35 +142,24 @@ describe('firebase-clients', () => {
   });
 
   it('returns firestore client directly', () => {
-    const firestore = getFirestoreClient(projectKey);
+    callGetFirebaseClients(projectKey, testConfig, false);
+
+    const firestore = callGetFirestoreClient(projectKey, false);
     expect(firestore).toBe(mockFirestore);
   });
 
   it('returns auth client directly', () => {
-    const auth = getAuthClient(projectKey);
+    callGetFirebaseClients(projectKey, testConfig, false);
+
+    const auth = callGetAuthClient(projectKey, false);
     expect(auth).toBe(mockAuth);
   });
 
   it('throws if firebase project config is missing', () => {
-    const badConfig: WorkspaceConfig = {
-      firebase: {
-        emulators: testConfig.firebase.emulators,
-        projects: {
-          'personal-project': {
-            apiKey: '',
-            authDomain: '',
-            projectId: '',
-            storageBucket: '',
-            messagingSenderId: '',
-            appId: '',
-            measurementId: undefined,
-          },
-        },
-      },
-    };
+    const missingKey = 'missing-project' as FirebaseProjectKey;
 
-    expect(() => getFirebaseClients(projectKey, badConfig)).toThrow(
-      'Firebase config missing for project: portfolio'
-    );
+    expect(() =>
+      callGetFirebaseClients(missingKey, testConfig, false)
+    ).toThrow(`Firebase config missing for project: ${missingKey}`);
   });
 });

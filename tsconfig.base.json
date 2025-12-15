@@ -18,7 +18,8 @@
       "@portfolio/shared/config": ["libs/shared/config/src/index.ts"],
       "@portfolio/shared/firebase-core": [
         "libs/shared/firebase-core/src/index.ts"
-      ]
+      ],
+      "@portfolio/shared/firestore": ["libs/shared/firestore/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

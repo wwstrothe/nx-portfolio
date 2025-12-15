@@ -1,8 +1,8 @@
 import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { Auth, connectAuthEmulator, getAuth } from 'firebase/auth';
 import {
-  Firestore,
   connectFirestoreEmulator,
+  Firestore,
   getFirestore,
 } from 'firebase/firestore';
 
@@ -12,10 +12,6 @@ import type {
 } from '@portfolio/shared/config';
 import { workspaceConfig } from '@portfolio/shared/config';
 
-/* ======================================================
-   Types
-   ====================================================== */
-
 type Clients = {
   app: FirebaseApp;
   firestore: Firestore;
@@ -23,101 +19,70 @@ type Clients = {
 };
 
 type GetClientsOptions = {
-  /**
-   * HARD gate.
-   * Should be true only in local dev (ex: Angular isDevMode()).
-   * If false, emulators will NEVER be connected.
-   */
   allowEmulators?: boolean;
 };
 
-/* ======================================================
-   Caches
-   ====================================================== */
+type ClientMode = 'emulator' | 'live';
+type ClientKey = `${FirebaseProjectKey}::${ClientMode}`;
 
-const clientsByProject = new Map<FirebaseProjectKey, Clients>();
+const clientsByKey = new Map<ClientKey, Clients>();
 
-// Emulator connections are GLOBAL per runtime
-let firestoreEmulatorConnected = false;
-let authEmulatorConnected = false;
-
-/* ======================================================
-   Internal helpers
-   ====================================================== */
+function appName(projectKey: FirebaseProjectKey, mode: ClientMode): string {
+  return `${projectKey}::${mode}`;
+}
 
 function initAppForProject(
   config: WorkspaceConfig,
-  projectKey: FirebaseProjectKey
+  projectKey: FirebaseProjectKey,
+  mode: ClientMode
 ): FirebaseApp {
   const projectConfig = config.firebase.projects[projectKey];
-  if (!projectConfig) {
+  if (!projectConfig)
     throw new Error(`Firebase config missing for project: ${projectKey}`);
-  }
 
-  const existing = getApps().find((a) => a.name === projectKey);
-  return existing ?? initializeApp(projectConfig, projectKey);
+  const name = appName(projectKey, mode);
+  const existing = getApps().find((app) => app.name === name);
+  return existing ?? initializeApp(projectConfig, name);
 }
 
-function connectEmulatorsOnce(
+function connectEmulatorsIfNeeded(
   config: WorkspaceConfig,
   firestore: Firestore,
-  auth: Auth,
-  allowEmulators: boolean
+  auth: Auth
 ): void {
-  // HARD STOP: never connect in prod / non-dev
-  if (!allowEmulators) return;
-
   const emulator = config.firebase.emulators;
-
-  // SOFT STOP: dev allowed, but emulators disabled in config
   if (!emulator.enabled) return;
 
-  if (!firestoreEmulatorConnected) {
-    connectFirestoreEmulator(
-      firestore,
-      emulator.firestore.host,
-      emulator.firestore.port
-    );
-    firestoreEmulatorConnected = true;
-  }
+  connectFirestoreEmulator(firestore, emulator.firestore.host, emulator.firestore.port);
 
-  if (!authEmulatorConnected) {
-    connectAuthEmulator(
-      auth,
-      `http://${emulator.auth.host}:${emulator.auth.port}`,
-      {
-        disableWarnings: true,
-      }
-    );
-    authEmulatorConnected = true;
-  }
+  connectAuthEmulator(auth, `http://${emulator.auth.host}:${emulator.auth.port}`, {
+    disableWarnings: true,
+  });
 }
-
-/* ======================================================
-   Public API
-   ====================================================== */
 
 export function getFirebaseClients(
   projectKey: FirebaseProjectKey,
   config: WorkspaceConfig = workspaceConfig,
   options: GetClientsOptions = {}
 ): Clients {
-  const existing = clientsByProject.get(projectKey);
+  const allowEmulators = options.allowEmulators ?? false;
+  const mode: ClientMode = allowEmulators ? 'emulator' : 'live';
+  const key = `${projectKey}::${mode}` as ClientKey;
+
+  const existing = clientsByKey.get(key);
   if (existing) return existing;
 
-  const app = initAppForProject(config, projectKey);
+  const app = initAppForProject(config, projectKey, mode);
   const firestore = getFirestore(app);
   const auth = getAuth(app);
 
-  connectEmulatorsOnce(
-    config,
-    firestore,
-    auth,
-    options.allowEmulators ?? false
-  );
+  if (mode === 'emulator') {
+    // only connect emulator for emulator-mode clients
+    connectEmulatorsIfNeeded(config, firestore, auth);
+  }
 
   const clients: Clients = { app, firestore, auth };
-  clientsByProject.set(projectKey, clients);
+  clientsByKey.set(key, clients);
   return clients;
 }
 
