@@ -32,7 +32,7 @@ const IS_DEV = isDevMode();
   imports: [RouterModule, JsonPipe],
   selector: 'portfolio-root',
   template: `
-    <h1>{{ title }}</h1>
+    <!-- <h1>{{ title }}</h1>
 
     <div
       style="display:flex; gap:24px; align-items:flex-start; margin: 12px 0;"
@@ -75,10 +75,9 @@ const IS_DEV = isDevMode();
       } }
     </div>
 
-    <hr />
+    <hr /> -->
     <router-outlet></router-outlet>
   `,
-  styleUrl: './app.scss',
 })
 export class App {
   protected title = 'William Strothe Portfolio';
