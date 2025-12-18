@@ -1,6 +1,8 @@
 // Design Tokens - Variables
 // Color palette, spacing, typography, and other design values
 
+@use 'sass:map';
+
 // ============================================================================
 // COLORS
 // ============================================================================
@@ -236,25 +238,25 @@ $transition-map: (
 
 // Helper functions
 @function semantic($key) {
-  @return map-get($semantic, $key);
+  @return map.get($semantic, $key);
 }
 
 @function space($key) {
-  @return map-get($space, $key);
+  @return map.get($space, $key);
 }
 
 @function elevation-value($level) {
-  @return map-get($elevation, $level);
+  @return map.get($elevation, $level);
 }
 
 @function transition-value($speed) {
-  @return map-get($transition-map, $speed);
+  @return map.get($transition-map, $speed);
 }
 
 @function container-width($size) {
-  @return map-get(map-get($sizing, container), $size);
+  @return map.get(map.get($sizing, container), $size);
 }
 
 @function icon-size($size) {
-  @return map-get(map-get($sizing, icon), $size);
+  @return map.get(map.get($sizing, icon), $size);
 }
