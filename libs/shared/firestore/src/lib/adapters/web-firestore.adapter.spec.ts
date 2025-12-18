@@ -6,6 +6,7 @@ const collectionMock = jest.fn();
 const getDocMock = jest.fn();
 const getDocsMock = jest.fn();
 const setDocMock = jest.fn();
+const addDocMock = jest.fn();
 const updateDocMock = jest.fn();
 const deleteDocMock = jest.fn();
 const writeBatchMock = jest.fn();
@@ -19,6 +20,7 @@ jest.mock('firebase/firestore', () => {
     getDoc: (...args: unknown[]) => getDocMock(...args),
     getDocs: (...args: unknown[]) => getDocsMock(...args),
     setDoc: (...args: unknown[]) => setDocMock(...args),
+    addDoc: (...args: unknown[]) => addDocMock(...args),
     updateDoc: (...args: unknown[]) => updateDocMock(...args),
     deleteDoc: (...args: unknown[]) => deleteDocMock(...args),
     writeBatch: (...args: unknown[]) => writeBatchMock(...args),
@@ -114,6 +116,20 @@ describe('createWebFirestoreAdapter', () => {
       { __type: 'doc', path: 'test/1' },
       { message: 'x', createdAt: 1 }
     );
+  });
+
+  it('addDoc calls firebase addDoc with collection ref and returns doc id', async () => {
+    addDocMock.mockResolvedValueOnce({ id: 'auto-id-123' });
+
+    const adapter = createWebFirestoreAdapter(db);
+    const docId = await adapter.addDoc<TestDoc>('test', { message: 'new', createdAt: 999 });
+
+    expect(collectionMock).toHaveBeenCalledWith(db, 'test');
+    expect(addDocMock).toHaveBeenCalledWith(
+      { __type: 'col', path: 'test' },
+      { message: 'new', createdAt: 999 }
+    );
+    expect(docId).toBe('auto-id-123');
   });
 
   it('updateDoc calls firebase updateDoc with doc ref', async () => {

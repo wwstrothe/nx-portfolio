@@ -22,6 +22,14 @@ export async function setByPath<T extends Record<string, unknown>>(
   return db.setDoc<T>(docPath, data, options);
 }
 
+export async function addByPath<T extends Record<string, unknown>>(
+  db: FirestoreAdapter,
+  collectionPath: CollectionPath,
+  data: T
+): Promise<string> {
+  return db.addDoc<T>(collectionPath, data);
+}
+
 export async function updateByPath<T extends Record<string, unknown>>(
   db: FirestoreAdapter,
   docPath: DocPath,

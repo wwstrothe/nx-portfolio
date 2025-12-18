@@ -23,6 +23,11 @@ export interface FirestoreAdapter {
     options?: SetOptions
   ): Promise<void>;
 
+  addDoc<T extends Record<string, unknown>>(
+    collectionPath: CollectionPath,
+    data: T
+  ): Promise<string>;
+
   updateDoc<T extends Record<string, unknown>>(
     path: DocPath,
     data: Partial<T>
