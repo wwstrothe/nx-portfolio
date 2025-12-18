@@ -30,7 +30,7 @@ app.get('/targets', (_req, res) => {
 /**
  * Lists TOP-LEVEL collection names for a target.
  * /collections?target=emulator
- * /collections?target=portfolio
+ * /collections?target=personal-project
  */
 app.get('/collections', async (req, res) => {
   const target = req.query.target as Target | undefined;
