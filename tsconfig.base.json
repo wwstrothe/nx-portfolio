@@ -28,6 +28,9 @@
       ],
       "@portfolio/shared/angular/firebase-config-angular": [
         "libs/shared/angular/firebase-config-angular/src/index.ts"
+      ],
+      "@portfolio/shared/angular/layouts": [
+        "libs/shared/angular/layouts/src/index.ts"
       ]
     }
   },
