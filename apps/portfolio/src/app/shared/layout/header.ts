@@ -27,9 +27,8 @@ import { ThemeToggle } from './theme-toggle';
   `,
   styles: [
     `
-      @use '../../../../../../libs/shared/design-tokens/src/lib/variables' as
-        tokens;
-      @use '../../../../../../libs/shared/design-tokens/src/lib/mixins' as *;
+      @use 'variables' as tokens;
+      @use 'mixins' as *;
 
       .header {
         background-color: var(--color-header-bg);

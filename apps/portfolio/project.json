@@ -19,6 +19,11 @@
         ],
         "tsConfig": "apps/portfolio/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
+        "stylePreprocessorOptions": {
+          "includePaths": [
+            "libs/shared/design-tokens/src/lib"
+          ]
+        },
         "assets": [
           {
             "glob": "**/*",

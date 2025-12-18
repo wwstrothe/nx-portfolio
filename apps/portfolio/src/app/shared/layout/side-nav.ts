@@ -1,10 +1,10 @@
 import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    input,
-    output,
-    ViewChild,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  input,
+  output,
+  ViewChild,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeToggle } from './theme-toggle';
@@ -60,9 +60,8 @@ import { ThemeToggle } from './theme-toggle';
   `,
   styles: [
     `
-      @use '../../../../../../libs/shared/design-tokens/src/lib/variables' as
-        tokens;
-      @use '../../../../../../libs/shared/design-tokens/src/lib/mixins' as *;
+      @use 'variables' as tokens;
+      @use 'mixins' as *;
 
       .sidenav {
         position: fixed;

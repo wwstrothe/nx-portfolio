@@ -28,8 +28,8 @@ import { Component } from '@angular/core';
   `,
   styles: [
     `
-      @use '../../../../../../libs/shared/design-tokens/src/lib/variables' as tokens;
-      @use '../../../../../../libs/shared/design-tokens/src/lib/mixins' as *;
+      @use 'variables' as tokens;
+      @use 'mixins' as *;
 
       .footer {
         background-color: var(--color-footer-bg);
