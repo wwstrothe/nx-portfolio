@@ -1,4 +1,5 @@
 import {
+  addByPath,
   deleteByPath,
   getByPath,
   listByCollection,
@@ -20,6 +21,10 @@ describe('crud helpers', () => {
   const setDocMock = jest.fn(
     async (path: string, data: Record<string, unknown>, options?: SetOptions) =>
       undefined
+  );
+
+  const addDocMock = jest.fn(
+    async (path: string, data: Record<string, unknown>) => 'generated-id-123'
   );
 
   const updateDocMock = jest.fn(
@@ -46,6 +51,13 @@ describe('crud helpers', () => {
       options?: SetOptions
     ): Promise<void> {
       await setDocMock(path, data, options);
+    },
+
+    async addDoc<T extends Record<string, unknown>>(
+      path: string,
+      data: T
+    ): Promise<string> {
+      return addDocMock(path, data);
     },
 
     async updateDoc<T extends Record<string, unknown>>(
@@ -78,6 +90,12 @@ describe('crud helpers', () => {
   it('setByPath calls adapter.setDoc', async () => {
     await setByPath<TestDoc>(mockDb, 'test/1', { name: 'B' }, { merge: true });
     expect(setDocMock).toHaveBeenCalledWith('test/1', { name: 'B' }, { merge: true });
+  });
+
+  it('addByPath calls adapter.addDoc and returns generated id', async () => {
+    const docId = await addByPath<TestDoc>(mockDb, 'test', { name: 'D' });
+    expect(addDocMock).toHaveBeenCalledWith('test', { name: 'D' });
+    expect(docId).toBe('generated-id-123');
   });
 
   it('updateByPath calls adapter.updateDoc', async () => {

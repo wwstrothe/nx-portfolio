@@ -1,0 +1,226 @@
+// Global Styles
+// Base styles, resets, and common patterns
+
+@use './variables' as *;
+@use './mixins' as *;
+@use './theme';
+@use './grid';
+
+// ============================================================================
+// RESET & BASE
+// ============================================================================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: $font-family-sans;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  transition: background-color $transition-base, color $transition-base;
+}
+
+// ============================================================================
+// TYPOGRAPHY
+// ============================================================================
+
+h1 {
+  @include heading-large;
+  margin-bottom: $spacing-lg;
+}
+
+h2 {
+  @include heading-medium;
+  margin-bottom: $spacing-md;
+}
+
+h3 {
+  @include heading-small;
+  margin-bottom: $spacing-md;
+}
+
+h4,
+h5,
+h6 {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-md;
+}
+
+p {
+  margin-bottom: $spacing-md;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color $transition-base;
+
+  &:hover {
+    color: var(--color-primary-dark);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+    border-radius: $border-radius-sm;
+  }
+}
+
+// ============================================================================
+// LISTS
+// ============================================================================
+
+ul,
+ol {
+  margin-bottom: $spacing-md;
+  padding-left: $spacing-xl;
+}
+
+li {
+  margin-bottom: $spacing-sm;
+}
+
+// ============================================================================
+// FORMS
+// ============================================================================
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input,
+textarea,
+select {
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid var(--color-border);
+  border-radius: $border-radius-md;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color $transition-base,
+    box-shadow $transition-base;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    @include focus-ring;
+  }
+
+  &:disabled {
+    @include disabled-state;
+    background-color: var(--color-bg-secondary);
+  }
+}
+
+// ============================================================================
+// BUTTONS
+// ============================================================================
+
+button {
+  @include button-base;
+  background-color: var(--color-primary);
+  color: $color-white;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+    @include elevation-2;
+  }
+
+  &:active:not(:disabled) {
+    background-color: $color-primary-dark;
+  }
+}
+
+// ============================================================================
+// LAYOUT
+// ============================================================================
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+.container {
+  @include container;
+}
+
+.inner {
+  @include container;
+}
+
+// ============================================================================
+// CODE
+// ============================================================================
+
+code,
+pre {
+  font-family: $font-family-mono;
+  font-size: $font-size-sm;
+}
+
+code {
+  background-color: var(--color-bg-secondary);
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  color: $color-error;
+}
+
+pre {
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  padding: $spacing-md;
+  border-radius: $border-radius-md;
+  overflow-x: auto;
+  margin-bottom: $spacing-md;
+
+  code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+  }
+}
+
+// ============================================================================
+// UTILITY CLASSES
+// ============================================================================
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ============================================================================
+// ICONS (Google Material Symbols)
+// ============================================================================
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: icon-size(md);
+  line-height: 1;
+  display: inline-block;
+}

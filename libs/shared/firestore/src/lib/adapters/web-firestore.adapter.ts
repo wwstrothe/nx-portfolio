@@ -3,6 +3,7 @@ import { Observable as RxObservable } from 'rxjs';
 
 import type { Firestore } from 'firebase/firestore';
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -29,18 +30,21 @@ function toFirestoreSetOptions(options?: SetOptions) {
   return options ? { merge: options.merge } : undefined;
 }
 
-export function createWebFirestoreAdapter(
-  db: Firestore
-): FirestoreAdapter &
+export type { QueryConstraint };
+export function createWebFirestoreAdapter(db: Firestore): FirestoreAdapter &
   BatchAdapter & {
-    listenDoc$<T extends Record<string, unknown>>(docPath: string): Observable<WithId<T> | null>;
+    listenDoc$<T extends Record<string, unknown>>(
+      docPath: string
+    ): Observable<WithId<T> | null>;
     listenCollection$<T extends Record<string, unknown>>(
       collectionPath: string,
       constraints?: QueryConstraint[]
     ): Observable<Array<WithId<T>>>;
   } {
   return {
-    async getDoc<T extends Record<string, unknown>>(path: string): Promise<WithId<T> | null> {
+    async getDoc<T extends Record<string, unknown>>(
+      path: string
+    ): Promise<WithId<T> | null> {
       const ref = doc(db, path); // DocumentReference<DocumentData>
       const snap = await getDoc(ref);
       if (!snap.exists()) return null;
@@ -58,6 +62,15 @@ export function createWebFirestoreAdapter(
       else await setDoc(ref, data as unknown as DocumentData);
     },
 
+    async addDoc<T extends Record<string, unknown>>(
+      collectionPath: string,
+      data: T
+    ): Promise<string> {
+      const ref = collection(db, collectionPath);
+      const docRef = await addDoc(ref, data as unknown as DocumentData);
+      return docRef.id;
+    },
+
     async updateDoc<T extends Record<string, unknown>>(
       path: string,
       data: Partial<T>
@@ -70,7 +83,9 @@ export function createWebFirestoreAdapter(
       await deleteDoc(doc(db, path));
     },
 
-    async listCollection<T extends Record<string, unknown>>(path: string): Promise<Array<WithId<T>>> {
+    async listCollection<T extends Record<string, unknown>>(
+      path: string
+    ): Promise<Array<WithId<T>>> {
       const snap = await getDocs(collection(db, path));
       return snap.docs.map((d) => withId<T>(d.id, d.data() as T));
     },
@@ -83,7 +98,8 @@ export function createWebFirestoreAdapter(
 
         if (op.type === 'set') {
           const fsOpts = toFirestoreSetOptions(op.options);
-          if (fsOpts) batch.set(ref, op.data as unknown as DocumentData, fsOpts);
+          if (fsOpts)
+            batch.set(ref, op.data as unknown as DocumentData, fsOpts);
           else batch.set(ref, op.data as unknown as DocumentData);
         } else if (op.type === 'update') {
           batch.update(ref, op.data as unknown as Partial<DocumentData>);
@@ -95,7 +111,9 @@ export function createWebFirestoreAdapter(
       await batch.commit();
     },
 
-    listenDoc$<T extends Record<string, unknown>>(docPath: string): Observable<WithId<T> | null> {
+    listenDoc$<T extends Record<string, unknown>>(
+      docPath: string
+    ): Observable<WithId<T> | null> {
       return new RxObservable<WithId<T> | null>((subscriber) => {
         const ref = doc(db, docPath);
 
@@ -118,11 +136,16 @@ export function createWebFirestoreAdapter(
     ): Observable<Array<WithId<T>>> {
       return new RxObservable<Array<WithId<T>>>((subscriber) => {
         const base = collection(db, collectionPath);
-        const q = constraints.length ? query(base, ...constraints) : query(base);
+        const q = constraints.length
+          ? query(base, ...constraints)
+          : query(base);
 
         const unsub: Unsubscribe = onSnapshot(
           q,
-          (snap) => subscriber.next(snap.docs.map((d) => withId<T>(d.id, d.data() as T))),
+          (snap) =>
+            subscriber.next(
+              snap.docs.map((d) => withId<T>(d.id, d.data() as T))
+            ),
           (err) => subscriber.error(err)
         );
 
@@ -131,6 +154,3 @@ export function createWebFirestoreAdapter(
     },
   };
 }
-
-export type { QueryConstraint };
-

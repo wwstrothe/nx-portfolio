@@ -1,0 +1,191 @@
+// Design Tokens - Mixins
+// Utility mixins for common patterns
+
+@use 'sass:math';
+@use './variables' as *;
+
+// ============================================================================
+// RESPONSIVE DESIGN
+// ============================================================================
+
+@mixin media-sm {
+  @media (min-width: 640px) {
+    @content;
+  }
+}
+
+@mixin media-md {
+  @media (min-width: 768px) {
+    @content;
+  }
+}
+
+@mixin media-lg {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin media-xl {
+  @media (min-width: 1280px) {
+    @content;
+  }
+}
+
+@mixin media-2xl {
+  @media (min-width: 1536px) {
+    @content;
+  }
+}
+
+// ============================================================================
+// TYPOGRAPHY
+// ============================================================================
+
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@mixin heading-large {
+  font-size: $font-size-4xl;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+}
+
+@mixin heading-medium {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+}
+
+@mixin heading-small {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-tight;
+}
+
+@mixin body-large {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-relaxed;
+}
+
+@mixin body-medium {
+  font-size: $font-size-md;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-relaxed;
+}
+
+@mixin body-small {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-normal;
+}
+
+// ============================================================================
+// LAYOUT
+// ============================================================================
+
+@mixin container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+
+  @include media-md {
+    padding: 0 $spacing-lg;
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// ============================================================================
+// INTERACTIVE
+// ============================================================================
+
+@mixin focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba($color-primary, 0.1),
+    0 0 0 5px $color-primary;
+}
+
+@mixin disabled-state {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-lg;
+  border: none;
+  border-radius: $border-radius-md;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    @include disabled-state;
+  }
+}
+
+// ============================================================================
+// EFFECTS
+// ============================================================================
+
+@mixin elevation-1 {
+  box-shadow: $shadow-sm;
+}
+
+@mixin elevation-2 {
+  box-shadow: $shadow-md;
+}
+
+@mixin elevation-3 {
+  box-shadow: $shadow-lg;
+}
+
+@mixin elevation-4 {
+  box-shadow: $shadow-xl;
+}
+
+@mixin smooth-transition($property: all) {
+  transition: $property $transition-base;
+}
+
+// Flexible transition mixin using map speeds
+@mixin transition($property: all, $speed: base) {
+  transition: $property transition-value($speed);
+}
+
+// Elevation levels via map
+@mixin elevation($level) {
+  box-shadow: elevation-value($level);
+}

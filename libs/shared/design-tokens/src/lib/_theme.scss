@@ -1,0 +1,144 @@
+// Design Tokens - Theme Colors
+// Light and dark theme color schemes using CSS custom properties
+
+@use './variables' as *;
+
+// ============================================================================
+// COLOR CUSTOM PROPERTIES - LIGHT THEME (DEFAULT)
+// ============================================================================
+
+:root {
+  // Primary colors
+  --color-primary: #{$color-primary};
+  --color-primary-dark: #{$color-primary-dark};
+  --color-primary-light: #{$color-primary-light};
+
+  // Secondary colors
+  --color-secondary: #{$color-secondary};
+  --color-secondary-dark: #{$color-secondary-dark};
+  --color-secondary-light: #{$color-secondary-light};
+
+  // Accent colors
+  --color-accent: #{$color-accent};
+  --color-accent-dark: #{$color-accent-dark};
+  --color-accent-light: #{$color-accent-light};
+
+  // Semantic colors
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-error: #{$color-error};
+  --color-info: #{$color-info};
+
+  // Neutral background & text colors (Light theme - DEFAULT)
+  --color-bg: #{$color-white};
+  --color-bg-secondary: #{$color-gray-50};
+  --color-bg-tertiary: #{$color-gray-100};
+  --color-bg-elevated: #{$color-white};
+  --color-border: #{$color-gray-200};
+  --color-border-secondary: #{$color-gray-300};
+  --color-text: #{$color-gray-900};
+  --color-text-secondary: #{$color-gray-600};
+  --color-text-tertiary: #{$color-gray-500};
+
+  // Header/Footer (Light theme)
+  --color-header-bg: #{$color-white};
+  --color-header-border: #{$color-gray-200};
+  --color-footer-bg: #{$color-gray-900};
+  --color-footer-text: #{$color-gray-100};
+  --color-footer-text-secondary: #{$color-gray-400};
+}
+
+// ============================================================================
+// LIGHT MODE EXPLICIT CLASS
+// ============================================================================
+
+html.light {
+  // Neutral background & text colors (Light theme)
+  --color-bg: #{$color-white};
+  --color-bg-secondary: #{$color-gray-50};
+  --color-bg-tertiary: #{$color-gray-100};
+  --color-bg-elevated: #{$color-white};
+  --color-border: #{$color-gray-200};
+  --color-border-secondary: #{$color-gray-300};
+  --color-text: #{$color-gray-900};
+  --color-text-secondary: #{$color-gray-600};
+  --color-text-tertiary: #{$color-gray-500};
+
+  // Header/Footer (Light theme)
+  --color-header-bg: #{$color-white};
+  --color-header-border: #{$color-gray-200};
+  --color-footer-bg: #{$color-gray-900};
+  --color-footer-text: #{$color-gray-100};
+  --color-footer-text-secondary: #{$color-gray-400};
+}
+
+// ============================================================================
+// DARK THEME
+// ============================================================================
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    // Neutral background & text colors (Dark theme)
+    --color-bg: #{$color-gray-900};
+    --color-bg-secondary: #{$color-gray-800};
+    --color-bg-tertiary: #{$color-gray-700};
+    --color-bg-elevated: #{$color-gray-800};
+    --color-border: #{$color-gray-700};
+    --color-border-secondary: #{$color-gray-600};
+    --color-text: #{$color-gray-50};
+    --color-text-secondary: #{$color-gray-300};
+    --color-text-tertiary: #{$color-gray-400};
+
+    // Header/Footer (Dark theme)
+    --color-header-bg: #{$color-gray-800};
+    --color-header-border: #{$color-gray-700};
+    --color-footer-bg: #{$color-black};
+    --color-footer-text: #{$color-gray-100};
+    --color-footer-text-secondary: #{$color-gray-400};
+  }
+}
+
+// ============================================================================
+// EXPLICIT DARK MODE CLASS (HIGHEST PRIORITY)
+// ============================================================================
+
+html.dark {
+  // Neutral background & text colors (Dark theme)
+  --color-bg: #{$color-gray-900};
+  --color-bg-secondary: #{$color-gray-800};
+  --color-bg-tertiary: #{$color-gray-700};
+  --color-bg-elevated: #{$color-gray-800};
+  --color-border: #{$color-gray-700};
+  --color-border-secondary: #{$color-gray-600};
+  --color-text: #{$color-gray-50};
+  --color-text-secondary: #{$color-gray-300};
+  --color-text-tertiary: #{$color-gray-400};
+
+  // Header/Footer (Dark theme)
+  --color-header-bg: #{$color-gray-800};
+  --color-header-border: #{$color-gray-700};
+  --color-footer-bg: #{$color-black};
+  --color-footer-text: #{$color-gray-100};
+  --color-footer-text-secondary: #{$color-gray-400};
+}
+
+// Alternative: data-theme attribute
+html[data-theme='dark'] {
+  // Neutral background & text colors (Dark theme)
+  --color-bg: #{$color-gray-900};
+  --color-bg-secondary: #{$color-gray-800};
+  --color-bg-tertiary: #{$color-gray-700};
+  --color-bg-elevated: #{$color-gray-800};
+  --color-border: #{$color-gray-700};
+  --color-border-secondary: #{$color-gray-600};
+  --color-text: #{$color-gray-50};
+  --color-text-secondary: #{$color-gray-300};
+  --color-text-tertiary: #{$color-gray-400};
+
+  // Header/Footer (Dark theme)
+  --color-header-bg: #{$color-gray-800};
+  --color-header-border: #{$color-gray-700};
+  --color-footer-bg: #{$color-black};
+  --color-footer-text: #{$color-gray-100};
+  --color-footer-text-secondary: #{$color-gray-400};
+}
