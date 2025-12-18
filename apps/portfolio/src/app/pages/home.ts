@@ -1,40 +1,26 @@
 import { JsonPipe } from '@angular/common';
-import { Component, computed, inject, isDevMode, signal, Signal } from '@angular/core';
-import { FirestoreService } from '../shared/services/firestore.service';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  isDevMode,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EnvVm } from '@portfolio/shared/angular/firebase-config-angular';
+import { FirestoreService } from '@portfolio/shared/angular/firestore-angular';
 
 type TestDoc = {
+  id?: string;
   message: string;
   createdAt: number;
   updatedAt?: number;
 };
 
-type TestDocWithId = TestDoc & { id: string };
-
-type TestDocTools = {
-  docs: Signal<TestDocWithId[]>;
-  add(doc: TestDoc): Promise<string>;
-  update(id: string, patch: Partial<TestDoc>): Promise<void>;
-  remove(id: string): Promise<void>;
-};
-
-type EnvKey = 'emulator' | 'prod';
-
-type EnvVm = {
-  key: EnvKey;
-  label: string;
-  tools: TestDocTools | null;
-  docs: Signal<TestDocWithId[]>;
-  sortedDocs: Signal<TestDocWithId[]>;
-};
-
-const IS_DEV = isDevMode();
-
 @Component({
   selector: 'portfolio-home',
   imports: [JsonPipe],
   template: `
-    <h1>{{ title }}</h1>
-
     <div>
       @for (env of envs; track env.key) { @if (env.key !== 'emulator' || isDev)
       {
@@ -63,71 +49,95 @@ const IS_DEV = isDevMode();
           <pre>{{ env.docs() | json }}</pre>
         </details>
       </section>
-      } }
+      }
+      <hr />
+      }
     </div>
-
-    <hr />
   `,
 })
 export default class Home {
-  protected title = 'William Strothe Portfolio';
-  protected readonly isDev = IS_DEV;
+  protected readonly isDev = isDevMode();
 
   private readonly projectKey = 'personal-project' as const;
   private readonly firestoreService = inject(FirestoreService);
   private readonly collectionPath = 'test' as const;
+  private readonly destroyRef = inject(DestroyRef);
 
-  private readonly prodTools = this.firestoreService.createCollectionTools<TestDoc>({
-    collectionPath: this.collectionPath,
-    projectKey: this.projectKey,
-    initialValue: [] as TestDocWithId[],
-  });
-
-  private readonly emulatorTools = this.isDev
-    ? this.firestoreService.createCollectionTools<TestDoc>({
-        collectionPath: this.collectionPath,
-        projectKey: this.projectKey,
-        environment: 'emulator',
-        initialValue: [] as TestDocWithId[],
-      })
-    : null;
-
-  readonly envs: EnvVm[] = [
-    this.makeEnv('emulator', 'Emulator', this.emulatorTools),
-    this.makeEnv('prod', 'Production', this.prodTools),
-  ];
-
-  private makeEnv(key: EnvKey, label: string, tools: EnvVm['tools']): EnvVm {
-    const docs = tools?.docs ?? signal<TestDocWithId[]>([]);
-    const sortedDocs = computed(() =>
-      [...docs()].sort(
-        (a, b) => (b.updatedAt ?? b.createdAt) - (a.updatedAt ?? a.createdAt)
-      )
+  private readonly prodDocs =
+    this.firestoreService.listenCollectionAsSignal<TestDoc>(
+      this.projectKey,
+      'live',
+      this.collectionPath
     );
 
-    return { key, label, tools, docs, sortedDocs };
+  private readonly emulatorDocs = this.isDev
+    ? this.firestoreService.listenCollectionAsSignal<TestDoc>(
+        this.projectKey,
+        'emulator',
+        this.collectionPath
+      )
+    : this.prodDocs;
+
+  readonly envs: EnvVm<TestDoc>[] = [
+    {
+      key: 'emulator',
+      label: 'Emulator',
+      docs: this.emulatorDocs,
+      sortedDocs: computed(() =>
+        this.sortDocs(this.emulatorDocs(), 'updatedAt')
+      ),
+    },
+    {
+      key: 'live',
+      label: 'Production',
+      docs: this.prodDocs,
+      sortedDocs: computed(() => this.sortDocs(this.prodDocs(), 'updatedAt')),
+    },
+  ];
+
+  addDoc(env: EnvVm<TestDoc>) {
+    this.firestoreService
+      .addByPath$<TestDoc>(this.projectKey, env.key, this.collectionPath, {
+        message: `Hello from Angular (${
+          env.label
+        }) @ ${new Date().toLocaleTimeString()}`,
+        createdAt: Date.now(),
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 
-  async addDoc(env: EnvVm) {
-    if (!env.tools) return;
-    await env.tools.add({
-      message: `Hello from Angular (${
-        env.label
-      }) @ ${new Date().toLocaleTimeString()}`,
-      createdAt: Date.now(),
+  quickEdit(env: EnvVm<TestDoc>, item: TestDoc) {
+    const docRef = `${this.collectionPath}/${item.id}`;
+    this.firestoreService
+      .updateByPath$<TestDoc>(this.projectKey, env.key, docRef, {
+        message: `${item.message}|`,
+        updatedAt: Date.now(),
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+  }
+
+  deleteDoc(env: EnvVm<TestDoc>, item: TestDoc) {
+    const docRef = `${this.collectionPath}/${item.id}`;
+    this.firestoreService
+      .deleteByPath$(this.projectKey, env.key, docRef)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+  }
+
+  private sortDocs(docs: TestDoc[], sortBy: keyof TestDoc): TestDoc[] {
+    return [...docs].sort((a, b) => {
+      const aVal = a[sortBy] ?? a.createdAt;
+      const bVal = b[sortBy] ?? b.createdAt;
+
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return bVal - aVal;
+      }
+
+      const aStr = String(aVal ?? '');
+      const bStr = String(bVal ?? '');
+      return bStr.localeCompare(aStr);
     });
-  }
-
-  async quickEdit(env: EnvVm, item: TestDocWithId) {
-    if (!env.tools) return;
-    await env.tools.update(item.id, {
-      message: `${item.message}|`,
-      updatedAt: Date.now(),
-    });
-  }
-
-  async deleteDoc(env: EnvVm, item: TestDocWithId) {
-    if (!env.tools) return;
-    await env.tools.remove(item.id);
   }
 }
