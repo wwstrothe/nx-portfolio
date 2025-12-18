@@ -1,14 +1,15 @@
 import { JsonPipe } from '@angular/common';
 import {
   Component,
-  computed,
   DestroyRef,
   inject,
   isDevMode,
+  Signal,
+  signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { EnvVm } from '@portfolio/shared/angular/firebase-config-angular';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FirestoreService } from '@portfolio/shared/angular/firestore-angular';
+import { catchError, finalize, map, of, startWith } from 'rxjs';
 
 type TestDoc = {
   id?: string;
@@ -17,24 +18,56 @@ type TestDoc = {
   updatedAt?: number;
 };
 
+type EnvKey = 'emulator' | 'live';
+
+type LoadState<T> = {
+  data: Array<T>;
+  isLoading: boolean;
+  error: string | null;
+};
+
+type SavingState = {
+  isSaving: boolean;
+  savingError: string | null;
+  message: string | null;
+};
+
+type EnvEntry = {
+  key: EnvKey;
+  label: string;
+  vm: Signal<LoadState<TestDoc>>;
+};
+
+const PROJECT_KEY = 'personal-project',
+  COLLECTION_PATH = 'test';
+
 @Component({
   selector: 'portfolio-home',
   imports: [JsonPipe],
   template: `
     <div>
       @for (env of envs; track env.key) { @if (env.key !== 'emulator' || isDev)
-      {
+      { @let vm = env.vm(); @let envState = state()[env.key];
       <section>
         <h2>{{ env.label }}</h2>
 
+        @if (vm.isLoading) {
+        <p>Loading {{ env.label }} data…</p>
+        } @else if (vm.error) {
+        <p class="error">Error loading {{ env.label }}: {{ vm.error }}</p>
+        } @else {
         <div>
           <button (click)="addDoc(env)">Add document</button>
           <span
-            >Live docs: <b>{{ env.docs().length }}</b></span
+            >Live docs: <b>{{ vm.data.length }}</b></span
           >
         </div>
 
-        @for (item of env.sortedDocs(); track item.id) {
+        @if (envState.isSaving) {
+        <p>Saving to {{ env.label }}… {{ envState.message }}</p>
+        } @if (envState.savingError) {
+        <p class="error">Save error: {{ envState.savingError }}</p>
+        } @for (item of vm.data; track item.id) {
         <div>
           <div>{{ item.message }}</div>
           <div>
@@ -46,8 +79,9 @@ type TestDoc = {
 
         <details>
           <summary>Raw JSON</summary>
-          <pre>{{ env.docs() | json }}</pre>
+          <pre>{{ vm.data | json }}</pre>
         </details>
+        }
       </section>
       }
       <hr />
@@ -56,88 +90,143 @@ type TestDoc = {
   `,
 })
 export default class Home {
+  private readonly firestoreService = inject(FirestoreService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly isDev = isDevMode();
 
-  private readonly projectKey = 'personal-project' as const;
-  private readonly firestoreService = inject(FirestoreService);
-  private readonly collectionPath = 'test' as const;
-  private readonly destroyRef = inject(DestroyRef);
+  protected state = signal<Record<EnvKey, SavingState>>({
+    emulator: { isSaving: false, savingError: null, message: null },
+    live: { isSaving: false, savingError: null, message: null },
+  });
 
-  private readonly prodDocs =
-    this.firestoreService.listenCollectionAsSignal<TestDoc>(
-      this.projectKey,
-      'live',
-      this.collectionPath
-    );
+  private readonly liveVm = this.createCollectionVm('live');
+  private readonly emulatorVm = this.isDev
+    ? this.createCollectionVm('emulator')
+    : this.liveVm;
 
-  private readonly emulatorDocs = this.isDev
-    ? this.firestoreService.listenCollectionAsSignal<TestDoc>(
-        this.projectKey,
-        'emulator',
-        this.collectionPath
-      )
-    : this.prodDocs;
-
-  readonly envs: EnvVm<TestDoc>[] = [
-    {
-      key: 'emulator',
-      label: 'Emulator',
-      docs: this.emulatorDocs,
-      sortedDocs: computed(() =>
-        this.sortDocs(this.emulatorDocs(), 'updatedAt')
-      ),
-    },
-    {
-      key: 'live',
-      label: 'Production',
-      docs: this.prodDocs,
-      sortedDocs: computed(() => this.sortDocs(this.prodDocs(), 'updatedAt')),
-    },
+  readonly envs: EnvEntry[] = [
+    { key: 'emulator', label: 'Emulator', vm: this.emulatorVm },
+    { key: 'live', label: 'Production', vm: this.liveVm },
   ];
 
-  addDoc(env: EnvVm<TestDoc>) {
+  private createCollectionVm(target: EnvKey): Signal<LoadState<TestDoc>> {
+    const stream$ = this.firestoreService
+      .listenCollection$<TestDoc>(PROJECT_KEY, target, COLLECTION_PATH)
+      .pipe(
+        map((docs) => ({
+          data: this.firestoreService.sortDocs<TestDoc>(docs, [
+            'updatedAt',
+            'createdAt',
+          ]),
+          isLoading: false,
+          error: null,
+        })),
+        startWith<LoadState<TestDoc>>({
+          data: [],
+          isLoading: true,
+          error: null,
+        }),
+        catchError((err) =>
+          of<LoadState<TestDoc>>({
+            data: [],
+            isLoading: false,
+            error: this.formatError(err),
+          })
+        )
+      );
+
+    return toSignal(stream$, {
+      initialValue: { data: [], isLoading: true, error: null },
+    });
+  }
+
+  private beginSaving(envKey: EnvKey, message: string) {
+    this.state.update((prev) => ({
+      ...prev,
+      [envKey]: {
+        ...prev[envKey],
+        isSaving: true,
+        savingError: null,
+        message,
+      },
+    }));
+  }
+
+  private finishSaving(envKey: EnvKey) {
+    this.state.update((prev) => ({
+      ...prev,
+      [envKey]: {
+        ...prev[envKey],
+        isSaving: false,
+        message: null,
+      },
+    }));
+  }
+
+  private failSaving(envKey: EnvKey, error: unknown) {
+    this.state.update((prev) => ({
+      ...prev,
+      [envKey]: {
+        ...prev[envKey],
+        isSaving: false,
+        message: null,
+        savingError: this.formatError(error),
+      },
+    }));
+  }
+
+  private formatError(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return String(error);
+  }
+
+  addDoc(env: EnvEntry) {
+    this.beginSaving(env.key, 'Sending new document');
     this.firestoreService
-      .addByPath$<TestDoc>(this.projectKey, env.key, this.collectionPath, {
+      .addByPath$<TestDoc>(PROJECT_KEY, env.key, COLLECTION_PATH, {
         message: `Hello from Angular (${
           env.label
         }) @ ${new Date().toLocaleTimeString()}`,
         createdAt: Date.now(),
       })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe();
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.finishSaving(env.key))
+      )
+      .subscribe({
+        error: (err) => this.failSaving(env.key, err),
+      });
   }
 
-  quickEdit(env: EnvVm<TestDoc>, item: TestDoc) {
-    const docRef = `${this.collectionPath}/${item.id}`;
+  quickEdit(env: EnvEntry, item: TestDoc) {
+    const docRef = `${COLLECTION_PATH}/${item.id}`;
+    this.beginSaving(env.key, 'Updating document');
     this.firestoreService
-      .updateByPath$<TestDoc>(this.projectKey, env.key, docRef, {
+      .updateByPath$<TestDoc>(PROJECT_KEY, env.key, docRef, {
         message: `${item.message}|`,
         updatedAt: Date.now(),
       })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe();
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.finishSaving(env.key))
+      )
+      .subscribe({
+        error: (err) => this.failSaving(env.key, err),
+      });
   }
 
-  deleteDoc(env: EnvVm<TestDoc>, item: TestDoc) {
-    const docRef = `${this.collectionPath}/${item.id}`;
+  deleteDoc(env: EnvEntry, item: TestDoc) {
+    const docRef = `${COLLECTION_PATH}/${item.id}`;
+    this.beginSaving(env.key, 'Deleting document');
     this.firestoreService
-      .deleteByPath$(this.projectKey, env.key, docRef)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe();
-  }
-
-  private sortDocs(docs: TestDoc[], sortBy: keyof TestDoc): TestDoc[] {
-    return [...docs].sort((a, b) => {
-      const aVal = a[sortBy] ?? a.createdAt;
-      const bVal = b[sortBy] ?? b.createdAt;
-
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return bVal - aVal;
-      }
-
-      const aStr = String(aVal ?? '');
-      const bStr = String(bVal ?? '');
-      return bStr.localeCompare(aStr);
-    });
+      .deleteByPath$(PROJECT_KEY, env.key, docRef)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.finishSaving(env.key))
+      )
+      .subscribe({
+        error: (err) => this.failSaving(env.key, err),
+      });
   }
 }
