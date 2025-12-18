@@ -22,6 +22,12 @@
       "@portfolio/shared/firestore": ["libs/shared/firestore/src/index.ts"],
       "@portfolio/shared/design-tokens": [
         "libs/shared/design-tokens/src/index.ts"
+      ],
+      "@portfolio/shared/angular/firestore-angular": [
+        "libs/shared/angular/firestore-angular/src/index.ts"
+      ],
+      "@portfolio/shared/angular/firebase-config-angular": [
+        "libs/shared/angular/firebase-config-angular/src/index.ts"
       ]
     }
   },
