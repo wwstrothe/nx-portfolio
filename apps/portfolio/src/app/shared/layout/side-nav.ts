@@ -1,0 +1,176 @@
+import {
+    AfterViewInit,
+    Component,
+    ElementRef,
+    input,
+    output,
+    ViewChild,
+} from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ThemeToggle } from './theme-toggle';
+
+@Component({
+  selector: 'portfolio-side-nav',
+  standalone: true,
+  imports: [RouterLink, RouterLinkActive, ThemeToggle],
+  template: `
+    <aside
+      class="sidenav"
+      [class.open]="open()"
+      tabindex="-1"
+      (keydown.escape)="onEsc()"
+      #panel
+      role="dialog"
+      aria-label="Navigation"
+      aria-modal="true"
+    >
+      <div class="inner">
+        <div class="content">
+          <button
+            class="close-btn"
+            type="button"
+            aria-label="Close navigation"
+            (click)="closeSidenav.emit()"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+
+          <nav class="links">
+            <a
+              routerLink="/projects"
+              routerLinkActive="active"
+              (click)="closeSidenav.emit()"
+              >Projects</a
+            >
+            <a
+              routerLink="/resume"
+              routerLinkActive="active"
+              (click)="closeSidenav.emit()"
+              >Resume</a
+            >
+          </nav>
+        </div>
+
+        <div class="theme-row">
+          <span class="theme-label">Theme</span>
+          <portfolio-theme-toggle />
+        </div>
+      </div>
+    </aside>
+  `,
+  styles: [
+    `
+      @use '../../../../../../libs/shared/design-tokens/src/lib/variables' as
+        tokens;
+      @use '../../../../../../libs/shared/design-tokens/src/lib/mixins' as *;
+
+      .sidenav {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: auto;
+        height: 100vh;
+        width: 280px;
+        background: var(--color-bg);
+        border-left: 1px solid var(--color-border);
+        box-shadow: tokens.$shadow-lg;
+        transform: translateX(100%);
+        transition: transform tokens.$transition-fast;
+        z-index: tokens.$z-modal;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidenav.open {
+        transform: translateX(0);
+      }
+
+      .inner {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: tokens.space(16);
+        padding: tokens.space(16) tokens.space(24);
+        height: 100%;
+
+        @include media-md {
+          padding: tokens.space(24) tokens.space(32);
+        }
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        gap: tokens.space(16);
+      }
+
+      .close-btn {
+        align-self: flex-end;
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 1px solid var(--color-border);
+        border-radius: tokens.$border-radius-md;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-size: 1.25rem;
+        cursor: pointer;
+        @include transition(background-color, base);
+
+        &:hover {
+          background-color: var(--color-bg-secondary);
+        }
+      }
+
+      .links {
+        display: flex;
+        flex-direction: column;
+        gap: tokens.space(12);
+
+        a {
+          color: var(--color-text);
+          font-size: tokens.$font-size-md;
+          @include transition(color, base);
+
+          &:hover {
+            color: var(--color-primary);
+          }
+          &.active {
+            color: var(--color-primary);
+          }
+        }
+      }
+
+      .theme-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: tokens.space(12);
+        padding-top: tokens.space(12);
+        border-top: 1px solid var(--color-border-secondary);
+        margin-top: auto;
+      }
+
+      .theme-label {
+        color: var(--color-text-secondary);
+        font-size: tokens.$font-size-sm;
+      }
+    `,
+  ],
+})
+export class SideNav implements AfterViewInit {
+  open = input<boolean>(false);
+  closeSidenav = output<void>();
+
+  @ViewChild('panel') panelRef!: ElementRef<HTMLElement>;
+
+  onEsc() {
+    this.closeSidenav.emit();
+  }
+
+  ngAfterViewInit() {
+    if (this.open() && this.panelRef?.nativeElement) {
+      // Move focus to panel when opened for accessibility
+      this.panelRef.nativeElement.focus();
+    }
+  }
+}
