@@ -6,23 +6,23 @@ import type { QueryConstraint } from 'firebase/firestore';
 import { defer, from, type Observable } from 'rxjs';
 
 import {
-    addByPath,
-    CollectionPath,
-    deleteByPath,
-    DocPath,
-    getByPath,
-    listByCollection,
-    setByPath,
-    SetOptions,
-    updateByPath,
-    WithId,
-    type BatchOp,
+  addByPath,
+  CollectionPath,
+  deleteByPath,
+  DocPath,
+  getByPath,
+  listByCollection,
+  setByPath,
+  SetOptions,
+  updateByPath,
+  WithId,
+  type BatchOp,
 } from '@portfolio/shared/firestore';
 
 import {
-    FirebaseConfigService,
-    type FirestoreTargetOptions,
-    type Targets,
+  FirebaseConfigService,
+  type FirestoreTargetOptions,
+  type Targets,
 } from '@portfolio/shared/angular/firebase-config-angular';
 
 export type FirestoreCollectionToolsOptions<T extends Record<string, unknown>> =
@@ -37,6 +37,27 @@ export type FirestoreCollectionToolsOptions<T extends Record<string, unknown>> =
 })
 export class FirestoreService {
   private readonly configService = inject(FirebaseConfigService);
+
+  /**
+   * Convert a collection listener to a Signal.
+   * Useful for streaming data with automatic signal conversion.
+   */
+  listenCollectionAsSignal<T extends Record<string, unknown>>(
+    projectKey: FirebaseProjectKey,
+    target: Targets,
+    collectionPath: CollectionPath,
+    constraints?: QueryConstraint[]
+  ): Signal<Array<WithId<T>>> {
+    return toSignal(
+      this.listenCollection$<T>(
+        projectKey,
+        target,
+        collectionPath,
+        constraints
+      ),
+      { initialValue: [] as Array<WithId<T>> }
+    );
+  }
 
   async getByPath<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
@@ -215,25 +236,25 @@ export class FirestoreService {
     return defer(() => from(this.commitBatch(projectKey, target, ops)));
   }
 
-  /**
-   * Convert a collection listener to a Signal.
-   * Useful for streaming data with automatic signal conversion.
-   */
-  listenCollectionAsSignal<T extends Record<string, unknown>>(
-    projectKey: FirebaseProjectKey,
-    target: Targets,
-    collectionPath: CollectionPath,
-    constraints?: QueryConstraint[]
-  ): Signal<Array<WithId<T>>> {
-    return toSignal(
-      this.listenCollection$<T>(
-        projectKey,
-        target,
-        collectionPath,
-        constraints
-      ),
-      { initialValue: [] as Array<WithId<T>> }
-    );
+  sortDocs<T>(docs: T[], sortBy: keyof T | Array<keyof T>): T[] {
+    const keys = Array.isArray(sortBy) ? sortBy : [sortBy];
+
+    return [...docs].sort((a, b) => {
+      for (const key of keys) {
+        const aVal = a[key];
+        const bVal = b[key];
+
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          const diff = bVal - aVal;
+          if (diff !== 0) return diff;
+          continue;
+        }
+
+        const cmp = String(bVal ?? '').localeCompare(String(aVal ?? ''));
+        if (cmp !== 0) return cmp;
+      }
+      return 0;
+    });
   }
 
   /**
