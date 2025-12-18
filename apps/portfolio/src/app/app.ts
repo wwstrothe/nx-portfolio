@@ -1,19 +1,17 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Footer } from './shared/layout/footer';
-import { Header } from './shared/layout/header';
-import { SideNav } from './shared/layout/side-nav';
+import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
 
 @Component({
   selector: 'portfolio-root',
   imports: [RouterOutlet, SideNav, Footer, Header],
   template: `
-    <portfolio-header (menuOpen)="onMenuOpen()" />
+    <lib-portfolio-header (menuOpen)="onMenuOpen()" />
     <main>
       <router-outlet />
     </main>
     @if (isNavOpen) {
-    <portfolio-side-nav [open]="isNavOpen" (closeSidenav)="closeNav()" />
+    <lib-portfolio-side-nav [open]="isNavOpen" (closeSidenav)="closeNav()" />
     <div
       class="overlay"
       role="button"
@@ -24,12 +22,11 @@ import { SideNav } from './shared/layout/side-nav';
       (keydown.space)="closeNav()"
     ></div>
     }
-    <portfolio-footer />
+    <lib-portfolio-footer />
   `,
   styles: [
     `
-      @use '../../../../libs/shared/design-tokens/src/lib/variables' as
-        tokens;
+      @use '../../../../libs/shared/design-tokens/src/lib/variables' as tokens;
       @use '../../../../libs/shared/design-tokens/src/lib/mixins' as *;
 
       :host {

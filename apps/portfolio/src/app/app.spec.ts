@@ -44,8 +44,8 @@ describe('App', () => {
 			const fixture = TestBed.createComponent(App);
 			fixture.detectChanges();
 
-			const header = fixture.nativeElement.querySelector('portfolio-header');
-			const footer = fixture.nativeElement.querySelector('portfolio-footer');
+			const header = fixture.nativeElement.querySelector('lib-portfolio-header');
+			const footer = fixture.nativeElement.querySelector('lib-portfolio-footer');
 
 			expect(header).toBeTruthy();
 			expect(footer).toBeTruthy();
@@ -55,7 +55,7 @@ describe('App', () => {
 			const fixture = TestBed.createComponent(App);
 			fixture.detectChanges();
 
-			const sidenav = fixture.nativeElement.querySelector('portfolio-side-nav');
+			const sidenav = fixture.nativeElement.querySelector('lib-portfolio-side-nav');
 			const overlay = fixture.nativeElement.querySelector('.overlay');
 
 			expect(sidenav).toBeFalsy();
@@ -68,7 +68,7 @@ describe('App', () => {
 		app.isNavOpen = true;
 		fixture.detectChanges();
 
-		const sidenav = fixture.nativeElement.querySelector('portfolio-side-nav');
+		const sidenav = fixture.nativeElement.querySelector('lib-portfolio-side-nav');
 		const overlay = fixture.nativeElement.querySelector('.overlay');
 
 		expect(sidenav).toBeTruthy();
