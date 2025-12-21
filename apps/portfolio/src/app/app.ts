@@ -6,28 +6,28 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
   selector: 'portfolio-root',
   imports: [RouterOutlet, SideNav, Footer, Header],
   template: `
-    <lib-portfolio-header (menuOpen)="onMenuOpen()" />
+    <lib-portfolio-header [title]="title" [links]="links" (menuOpen)="onMenuOpen()" />
     <main>
       <router-outlet />
     </main>
     @if (isNavOpen) {
-    <lib-portfolio-side-nav [open]="isNavOpen" (closeSidenav)="closeNav()" />
-    <div
-      class="overlay"
-      role="button"
-      tabindex="0"
-      aria-label="Close navigation"
-      (click)="closeNav()"
-      (keydown.enter)="closeNav()"
-      (keydown.space)="closeNav()"
-    ></div>
+      <lib-portfolio-side-nav [links]="links" [open]="isNavOpen" (closeSidenav)="closeNav()" />
+      <div
+        class="overlay"
+        role="button"
+        tabindex="0"
+        aria-label="Close navigation"
+        (click)="closeNav()"
+        (keydown.enter)="closeNav()"
+        (keydown.space)="closeNav()"
+      ></div>
     }
-    <lib-portfolio-footer />
+    <lib-portfolio-footer [title]="title" />
   `,
   styles: [
     `
-      @use '../../../../libs/shared/design-tokens/src/lib/variables' as tokens;
-      @use '../../../../libs/shared/design-tokens/src/lib/mixins' as *;
+      @use 'variables' as tokens;
+      @use 'mixins' as *;
 
       :host {
         display: flex;
@@ -55,6 +55,11 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
   ],
 })
 export class App {
+  title = 'William Strothe';
+  links: Array<{ name: string; link: string }> = [
+    { name: 'Projects', link: '/projects' },
+    { name: 'Resume', link: '/resume' },
+  ];
   isNavOpen = false;
 
   onMenuOpen() {
