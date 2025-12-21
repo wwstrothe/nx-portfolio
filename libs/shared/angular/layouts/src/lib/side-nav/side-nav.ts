@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, input, output, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ThemeToggle } from './theme-toggle';
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 
 @Component({
   selector: 'lib-portfolio-side-nav',
