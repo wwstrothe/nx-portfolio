@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeToggle } from './theme-toggle';
 
@@ -8,19 +8,20 @@ import { ThemeToggle } from './theme-toggle';
   template: `
     <header class="header">
       <div class="inner">
-        <a class="brand" routerLink="/">William Strothe</a>
-        <button
-          class="menu-btn"
-          aria-label="Open navigation"
-          (click)="menuOpen.emit()"
-        >
+        <a class="brand" routerLink="/">{{ title() }}</a>
+        <button class="menu-btn" aria-label="Open navigation" (click)="menuOpen.emit()">
           <span class="material-symbols-outlined" aria-hidden="true">menu</span>
         </button>
 
         <nav class="nav">
-          <a routerLink="/projects" routerLinkActive="active">Projects</a>
-          <a routerLink="/resume" routerLinkActive="active">Resume</a>
-          <lib-portfolio-theme-toggle />
+          @for (link of links(); track $index) {
+            <a [routerLink]="link.link" routerLinkActive="active">
+              {{ link.name }}
+            </a>
+          }
+          @if (themeToggle()) {
+            <lib-portfolio-theme-toggle />
+          }
         </nav>
       </div>
     </header>
@@ -127,5 +128,8 @@ import { ThemeToggle } from './theme-toggle';
   ],
 })
 export class Header {
+  title = input.required<string>();
+  links = input<Array<{ name: string; link: string }>>();
+  themeToggle = input<boolean>(true);
   menuOpen = output<void>();
 }

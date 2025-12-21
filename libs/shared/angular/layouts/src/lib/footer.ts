@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'lib-portfolio-footer',
@@ -6,22 +6,18 @@ import { Component } from '@angular/core';
   template: `
     <footer class="footer">
       <div class="inner">
-        <span class="copyright">© {{ year }} William Strothe</span>
+        <span class="copyright">© {{ year }} {{ title() }}</span>
 
         <div class="links">
-          <a href="mailto:you@example.com">Email</a>
-          <a
-            href="https://linkedin.com/in/your-handle"
-            target="_blank"
-            rel="noreferrer"
-            >LinkedIn</a
-          >
-          <a
-            href="https://github.com/your-handle"
-            target="_blank"
-            rel="noreferrer"
-            >GitHub</a
-          >
+          @if (email()) {
+            <a [href]="email()">Email</a>
+          }
+          @if (linkedIn()) {
+            <a [href]="linkedIn()" target="_blank" rel="noreferrer">LinkedIn</a>
+          }
+          @if (github()) {
+            <a [href]="github()" target="_blank" rel="noreferrer">GitHub</a>
+          }
         </div>
       </div>
     </footer>
@@ -73,7 +69,8 @@ import { Component } from '@angular/core';
           &:focus-visible {
             outline: 2px solid transparent;
             outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(tokens.$color-primary, 0.2),
+            box-shadow:
+              0 0 0 3px rgba(tokens.$color-primary, 0.2),
               0 0 0 5px tokens.$color-primary;
             border-radius: tokens.$border-radius-sm;
           }
@@ -83,5 +80,9 @@ import { Component } from '@angular/core';
   ],
 })
 export class Footer {
+  title = input.required<string>();
+  email = input<string>();
+  linkedIn = input<string>();
+  github = input<string>();
   year = new Date().getFullYear();
 }
