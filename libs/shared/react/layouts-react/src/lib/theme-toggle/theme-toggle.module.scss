@@ -1,0 +1,38 @@
+@use 'variables' as tokens;
+@use 'mixins' as *;
+
+.themeToggle {
+  @include flex-center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: tokens.$border-radius-md;
+  cursor: pointer;
+  transition: all tokens.$transition-base;
+  color: var(--color-text);
+
+  &:hover {
+    background-color: var(--color-bg-secondary);
+    border-color: var(--color-border-secondary);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(tokens.$color-primary, 0.2),
+      0 0 0 5px tokens.$color-primary;
+  }
+}
+
+.icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
