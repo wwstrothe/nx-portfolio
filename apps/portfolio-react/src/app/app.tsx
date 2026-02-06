@@ -1,50 +1,54 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.scss';
-import NxWelcome from './nx-welcome';
-
-import { Route, Routes, Link } from 'react-router-dom';
+import { Footer, Header, SideNav } from '@portfolio/shared/react/layouts-react';
+import { useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import styles from './app.module.scss';
+import Home from './pages/home';
+import Projects from './pages/projects';
+import Resume from './pages/resume';
 
 export function App() {
-  return (
-    <div>
-      <NxWelcome title="portfolio-react" />
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
-      {/* START: routes */}
-      {/* These routes and navigation have been generated for you */}
-      {/* Feel free to move and update them to fit your needs */}
-      <br />
-      <hr />
-      <br />
-      <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
-      </div>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              This is the generated root route.{' '}
-              <Link to="/page-2">Click here for page 2.</Link>
-            </div>
-          }
-        />
-        <Route
-          path="/page-2"
-          element={
-            <div>
-              <Link to="/">Click here to go back to root page.</Link>
-            </div>
-          }
-        />
-      </Routes>
-      {/* END: routes */}
+  const handleMenuOpen = () => {
+    setIsNavOpen(true);
+  };
+
+  const handleNavClose = () => {
+    setIsNavOpen(false);
+  };
+
+  return (
+    <div className={styles.app}>
+      <Header onMenuOpen={handleMenuOpen} brandLabel="William Strothe" />
+      <main className={styles.main}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/resume" element={<Resume />} />
+        </Routes>
+      </main>
+      {isNavOpen && (
+        <>
+          <SideNav open={isNavOpen} onClose={handleNavClose} />
+          <div
+            className={styles.overlay}
+            role="button"
+            tabIndex={0}
+            aria-label="Close navigation"
+            onClick={handleNavClose}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleNavClose();
+              }
+            }}
+          />
+        </>
+      )}
+      <Footer
+        emailHref="mailto:you@example.com"
+        linkedinHref="https://linkedin.com/in/your-handle"
+        githubHref="https://github.com/your-handle"
+      />
     </div>
   );
 }

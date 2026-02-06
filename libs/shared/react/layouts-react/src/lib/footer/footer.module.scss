@@ -1,5 +1,5 @@
-@use 'variables' as tokens;
-@use 'mixins' as *;
+@use '../../../../../design-tokens/src/lib/variables' as tokens;
+@use '../../../../../design-tokens/src/lib/mixins' as *;
 
 .footer {
   background-color: var(--color-footer-bg);
