@@ -20,6 +20,8 @@
     "express": "^4.21.2",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.6.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "rxjs": "~7.8.0",
     "zone.js": "~0.15.0"
   },
@@ -40,6 +42,7 @@
     "@nx/js": "22.2.3",
     "@nx/node": "^22.2.3",
     "@nx/playwright": "22.2.3",
+    "@nx/react": "22.2.3",
     "@nx/web": "22.2.3",
     "@nx/workspace": "22.2.3",
     "@playwright/test": "^1.36.0",
