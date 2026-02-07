@@ -1,9 +1,8 @@
 export default {
-  displayName: 'firebase-config-angular',
+  displayName: 'firestore-angular',
   preset: '../../../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory:
-    '../../../../coverage/libs/shared/angular/firebase-config-angular',
+  coverageDirectory: '../../../../coverage/libs/angular/firestore-angular',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',
