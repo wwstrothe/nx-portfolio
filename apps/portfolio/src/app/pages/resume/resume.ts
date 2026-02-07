@@ -35,53 +35,65 @@ import { Database, Resume as ResumeData } from '../../data/database';
         <section class="resume-section">
           <h2 class="section-title">Technical Skills</h2>
           <div class="skills-grid">
-            <div *ngFor="let skillGroup of resumeData.technicalSkills" class="skill-category">
-              <p class="category-name">
-                <strong>{{ skillGroup.category }}</strong>
-              </p>
-              <p class="skills-list">{{ skillGroup.skills.join(', ') }}</p>
-            </div>
+            @for (skillGroup of resumeData.technicalSkills; track skillGroup) {
+              <div class="skill-category">
+                <p class="category-name">
+                  <strong>{{ skillGroup.category }}</strong>
+                </p>
+                <p class="skills-list">{{ skillGroup.skills.join(', ') }}</p>
+              </div>
+            }
           </div>
         </section>
 
         <!-- Professional Experience -->
         <section class="resume-section">
           <h2 class="section-title">Professional Experience</h2>
-          <div *ngFor="let exp of resumeData.proffesionalExperience" class="experience-entry">
-            <div class="experience-header">
-              <h3 class="position">{{ exp.role }} – {{ exp.department }}</h3>
-              <p class="company-location">
-                {{ exp.company }} – {{ exp.location }} | {{ exp.startDate }} – {{ exp.endDate }}
-              </p>
+          @for (exp of resumeData.professionalExperience; track exp) {
+            <div class="experience-entry">
+              <div class="experience-header">
+                <h3 class="position">{{ exp.role }} – {{ exp.department }}</h3>
+                <p class="company-location">
+                  {{ exp.company }} – {{ exp.location }} | {{ exp.startDate }} – {{ exp.endDate }}
+                </p>
+              </div>
+              <ul class="bullet-points">
+                @for (bullet of exp.bulletPoints; track bullet) {
+                  <li>{{ bullet }}</li>
+                }
+              </ul>
             </div>
-            <ul class="bullet-points">
-              <li *ngFor="let bullet of exp.bulletPoints">{{ bullet }}</li>
-            </ul>
-          </div>
+          }
         </section>
 
         <!-- Projects -->
         <section class="resume-section">
           <h2 class="section-title">Projects</h2>
-          <div *ngFor="let project of resumeData.projects" class="project-entry">
-            <h3 class="project-title">{{ project.title }}</h3>
-            <p class="project-tech">{{ project.technologies.join(', ') }}</p>
-            <ul class="bullet-points">
-              <li *ngFor="let bullet of project.bulletPoints">{{ bullet }}</li>
-            </ul>
-          </div>
+          @for (project of resumeData.projects; track project) {
+            <div class="project-entry">
+              <h3 class="project-title">{{ project.title }}</h3>
+              <p class="project-tech">{{ project.technologies.join(', ') }}</p>
+              <ul class="bullet-points">
+                @for (bullet of project.bulletPoints; track bullet) {
+                  <li>{{ bullet }}</li>
+                }
+              </ul>
+            </div>
+          }
         </section>
 
         <!-- Education -->
         <section class="resume-section">
           <h2 class="section-title">Education</h2>
-          <div *ngFor="let edu of resumeData.education" class="education-entry">
-            <div class="education-header">
-              <h3 class="institution">{{ edu.institution }}</h3>
-              <p class="field-study">{{ edu.fieldOfStudy }}</p>
+          @for (edu of resumeData.education; track edu) {
+            <div class="education-entry">
+              <div class="education-header">
+                <h3 class="institution">{{ edu.institution }}</h3>
+                <p class="field-study">{{ edu.fieldOfStudy }}</p>
+              </div>
+              <p class="completion-date">{{ edu.completionDate }}</p>
             </div>
-            <p class="completion-date">{{ edu.completionDate }}</p>
-          </div>
+          }
         </section>
       }
     </div>

@@ -1,5 +1,11 @@
-import { computed, inject, Injectable, signal, Signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, isDevMode, signal, Signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FirestoreService } from '@portfolio/shared/angular/firestore-angular';
+import { forkJoin } from 'rxjs';
+import { distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
+import { SITE_CONTENT } from './content';
+import { PROJECTS } from './projects';
+import { RESUME } from './resume';
 
 export interface SiteContent extends Record<string, unknown> {
   title: string;
@@ -41,7 +47,7 @@ export interface Resume extends Record<string, unknown> {
     category: string;
     skills: string[];
   }>;
-  proffesionalExperience: Array<{
+  professionalExperience: Array<{
     role: string;
     department: string;
     company: string;
@@ -69,13 +75,19 @@ export type PortfolioData = {
 };
 
 const PROJECT_KEY = 'personal-project',
-  COLLECTION_PATH = 'portfolio';
+  COLLECTION_PATH = 'portfolio',
+  SITE_CONTENT_DOC_ID = 'site-content',
+  PROJECTS_DOC_ID = 'projects',
+  RESUME_DOC_ID = 'resume';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Database {
   private readonly firestoreService = inject(FirestoreService);
+  private destroyRef = inject(DestroyRef);
+
+  private target: 'emulator' | 'live' = isDevMode() ? 'emulator' : 'live';
 
   // Signals for each slice of the portfolio data
   siteContent = signal<SiteContent | null>(null);
@@ -99,36 +111,41 @@ export class Database {
     this.resumeStatus.set('loading');
 
     this.firestoreService
-      .listenCollection$<PortfolioData>(PROJECT_KEY, 'emulator', COLLECTION_PATH)
+      .listenCollection$<PortfolioData>(PROJECT_KEY, this.target, COLLECTION_PATH)
+      .pipe(
+        map((docs) => {
+          const site = docs.find((d) => d.id === SITE_CONTENT_DOC_ID) as unknown as
+            | SiteContent
+            | undefined;
+          const projectsDoc = docs.find((d) => d.id === PROJECTS_DOC_ID) as unknown as
+            | { items: Project[] }
+            | undefined;
+          const resume = docs.find((d) => d.id === RESUME_DOC_ID) as unknown as Resume | undefined;
+
+          return {
+            siteContent: site ?? null,
+            projects: projectsDoc?.items ?? null,
+            resume: resume ?? null,
+          } as {
+            siteContent: SiteContent | null;
+            projects: Project[] | null;
+            resume: Resume | null;
+          };
+        }),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        shareReplay({ bufferSize: 1, refCount: true }),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
-        next: (docs) => {
-          const siteContentDoc = docs.find((doc) => doc.id === 'site-content');
-          if (siteContentDoc) {
-            this.siteContent.set(siteContentDoc as unknown as SiteContent);
-            this.siteContentStatus.set('complete');
-          } else {
-            this.siteContent.set(null);
-            this.siteContentStatus.set('complete');
-          }
+        next: ({ siteContent, projects, resume }) => {
+          this.siteContent.set(siteContent);
+          this.siteContentStatus.set('complete');
 
-          const projectsDoc = docs.find((doc) => doc.id === 'projects');
-          if (projectsDoc) {
-            const data = projectsDoc as unknown as { items: Array<Project> };
-            this.projects.set(data.items || []);
-            this.projectsStatus.set('complete');
-          } else {
-            this.projects.set(null);
-            this.projectsStatus.set('complete');
-          }
+          this.projects.set(projects);
+          this.projectsStatus.set('complete');
 
-          const resumeDoc = docs.find((doc) => doc.id === 'resume');
-          if (resumeDoc) {
-            this.resume.set(resumeDoc as unknown as Resume);
-            this.resumeStatus.set('complete');
-          } else {
-            this.resume.set(null);
-            this.resumeStatus.set('complete');
-          }
+          this.resume.set(resume);
+          this.resumeStatus.set('complete');
         },
         error: (err) => {
           this.lastError.set(err);
@@ -137,6 +154,50 @@ export class Database {
           this.resumeStatus.set('error');
         },
       });
+  }
+
+  saveInitialData() {
+    this.siteContentStatus.set('saving');
+    this.projectsStatus.set('saving');
+    this.resumeStatus.set('saving');
+
+    forkJoin({
+      site: this.firestoreService.setByPath$(
+        PROJECT_KEY,
+        this.target,
+        `${COLLECTION_PATH}/${SITE_CONTENT_DOC_ID}`,
+        SITE_CONTENT,
+      ),
+      projects: this.firestoreService.setByPath$(
+        PROJECT_KEY,
+        this.target,
+        `${COLLECTION_PATH}/${PROJECTS_DOC_ID}`,
+        { items: PROJECTS },
+      ),
+      resume: this.firestoreService.setByPath$(
+        PROJECT_KEY,
+        this.target,
+        `${COLLECTION_PATH}/${RESUME_DOC_ID}`,
+        RESUME,
+      ),
+    }).subscribe({
+      next: () => {
+        this.siteContent.set(SITE_CONTENT);
+        this.siteContentStatus.set('complete');
+
+        this.projects.set(PROJECTS);
+        this.projectsStatus.set('complete');
+
+        this.resume.set(RESUME);
+        this.resumeStatus.set('complete');
+      },
+      error: (err) => {
+        this.lastError.set(err as Error);
+        this.siteContentStatus.set('error');
+        this.projectsStatus.set('error');
+        this.resumeStatus.set('error');
+      },
+    });
   }
 
   // Helper to get a computed signal for a project by slug
