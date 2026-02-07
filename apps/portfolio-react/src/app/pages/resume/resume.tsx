@@ -7,7 +7,7 @@ export function Resume() {
   return (
     <div className={styles.resumeContainer}>
       <div className={styles.downloadSection}>
-        <a className={styles.downloadButton} href="/resume.pdf" download>
+        <a className={styles.downloadButton} href="pdfs/resume.pdf" download>
           <span>⬇</span> Download Resume (PDF)
         </a>
       </div>
