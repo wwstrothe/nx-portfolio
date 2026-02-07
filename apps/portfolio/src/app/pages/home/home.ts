@@ -35,4 +35,9 @@ import Projects from '../projects/projects';
 export default class Home {
   private database = inject(Database);
   protected readonly siteContent: Signal<SiteContent | null> = this.database.siteContent;
+
+  constructor() {
+    // * Uncomment the line below to reset the database with the raw data
+    // this.database.saveInitialData();
+  }
 }

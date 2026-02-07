@@ -18,7 +18,7 @@ export const PROJECTS: Array<Project> = [
     id: 'project2',
     slug: 'personal-portfolio-react',
     title: 'Personal Portfolio (React)',
-    status: 'wip',
+    status: 'active',
     shortDescription:
       'A full-stack personal portfolio built with React and TypeScript in an Nx monorepo.',
     description:
