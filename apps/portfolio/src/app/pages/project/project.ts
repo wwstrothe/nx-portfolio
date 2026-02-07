@@ -1,4 +1,5 @@
 import { Component, computed, inject, Signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Database, Project } from '../../data/database';
 
@@ -33,10 +34,10 @@ import { Database, Project } from '../../data/database';
         <div class="project-content">
           <p class="project-description">{{ projectData.description }}</p>
 
-          @if (projectData.videoUrl) {
+          @if (safeVideoUrl(); as safeUrl) {
             <div class="project-video">
               <iframe
-                [src]="projectData.videoUrl"
+                [src]="safeUrl"
                 width="100%"
                 height="600"
                 frameborder="0"
@@ -94,29 +95,50 @@ export default class ProjectDetail {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private database = inject(Database);
+  private sanitizer = inject(DomSanitizer);
 
   protected project!: Signal<Project | null>;
 
+  // Signal specifically for iframe binding
+  protected safeVideoUrl = computed<SafeResourceUrl | null>(() => {
+    const p = this.project?.();
+    const raw = p?.videoUrl;
+    if (!raw) return null;
+
+    const embed = this.toEmbedUrl(raw);
+    if (!embed) return null;
+
+    return this.sanitizer.bypassSecurityTrustResourceUrl(embed);
+  });
+
   constructor() {
-    // set initial project signal based on current route (and update on param changes)
     const setProjectFromSlug = (slug?: string) => {
-      if (slug) {
-        this.project = this.database.getProjectSignal(slug);
-      } else {
-        // fallback to a null computed signal
-        this.project = computed(() => null);
-      }
+      this.project = slug ? this.database.getProjectSignal(slug) : computed(() => null);
     };
 
-    const initialSlug = this.route.snapshot.params['slug'];
-    setProjectFromSlug(initialSlug);
-
-    this.route.params.subscribe((params) => {
-      setProjectFromSlug(params['slug']);
-    });
+    setProjectFromSlug(this.route.snapshot.params['slug']);
+    this.route.params.subscribe((params) => setProjectFromSlug(params['slug']));
   }
 
   goBack() {
     this.router.navigate(['/projects']);
+  }
+
+  private toEmbedUrl(url: string): string | null {
+    // Already an embed URL? Accept it.
+    if (url.includes('drive.google.com') && url.includes('/preview')) {
+      return url;
+    }
+
+    // Try to extract a Drive file id
+    const fileId = url.match(/\/file\/d\/([^/]+)/)?.[1] ?? url.match(/[?&]id=([^&]+)/)?.[1];
+
+    if (fileId) {
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
+    // Not a Drive link; if you also support YouTube/Vimeo etc, handle those here.
+    // Otherwise, reject unknown formats to avoid trusting arbitrary strings.
+    return null;
   }
 }

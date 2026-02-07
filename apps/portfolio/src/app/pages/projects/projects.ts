@@ -1,5 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
-import { Component, inject, input, Signal } from '@angular/core';
+import { Component, computed, inject, input, Signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Database, Project } from '../../data/database';
 
@@ -8,7 +8,7 @@ import { Database, Project } from '../../data/database';
   imports: [TitleCasePipe],
   template: `
     <h1 class="section-title">Projects</h1>
-    @if (projects(); as projectList) {
+    @if (sortedProjects(); as projectList) {
       <div class="projects">
         @for (project of projectList; track project.id) {
           <div
@@ -60,7 +60,18 @@ export default class Projects {
   private router = inject(Router);
   private database = inject(Database);
 
-  protected readonly projects: Signal<Array<Project> | null> = this.database.projects;
+  private readonly projects: Signal<Array<Project> | null> = this.database.projects;
+
+  protected readonly sortedProjects = computed(() => {
+    const list = this.projects();
+    if (!list) return null;
+    // move archived to the end, do not sort alphabetically to preserve any intentional ordering
+    return [...list].sort((a, b) => {
+      if (a.status === 'archived' && b.status !== 'archived') return 1;
+      if (a.status !== 'archived' && b.status === 'archived') return -1;
+      return 0;
+    });
+  });
 
   useShortDescription = input(false);
 

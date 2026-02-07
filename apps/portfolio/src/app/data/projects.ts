@@ -51,4 +51,52 @@ export const PROJECTS: Array<Project> = [
     liveLink: 'https://wwstrothe.github.io/20-photo-port/',
     tags: ['React', 'JavaScript', 'Jest', 'React Testing Library', 'GitHub Pages'],
   },
+  {
+    id: 'project5',
+    slug: 'pwa-budget-tracker',
+    title: 'PWA Budget Tracker',
+    status: 'archived',
+    shortDescription:
+      'Converted a database-enabled budget tracker into a functional Progressive Web Application (PWA) with offline access.',
+    description: `This project takes provided starter code for a database enabled budget tracker and converts it into a functional Progressive Web Application (PWA) with offline access and functionality. The browser Cache API is used to store the application's HTML, CSS, and JavaScript, controlled by a service worker. Offline transactions are stored using Indexed DB and are automatically uploaded when a connection is restored. A manifest file is also provided to allow the application to be downloaded to a browser, tablet, or phone.`,
+    repoLink: 'https://github.com/wwstrothe/pwa-budget-tracker',
+    tags: ['PWA', 'Service Worker', 'Cache API', 'IndexedDB', 'Manifest'],
+  },
+  {
+    id: 'project6',
+    slug: 'nosql-social-network-api',
+    title: 'NoSQL Social Network API',
+    status: 'active',
+    shortDescription: 'A RESTful API for a social network using Express and MongoDB.',
+    description:
+      "A RESTful API for a social network using Express and MongoDB. Implements user registration, authentication, and CRUD operations for thoughts and reactions. Users can create a friends list and interact with friends' thoughts through reactions. The API follows REST principles and includes endpoints for managing users, thoughts, reactions, and friendships.",
+    repoLink: 'https://github.com/wwstrothe/nosql-social-network-api',
+    tags: ['Node.js', 'Express', 'MongoDB', 'Mongoose', 'REST API'],
+    videoUrl: 'https://drive.google.com/file/d/1o3UOxAmlBV5MDB3sMhT0XtHxu0NZ1Nnx/view',
+  },
+  {
+    id: 'project7',
+    slug: 'employee-tracker-sql-cli',
+    title: 'Employee Tracker (SQL CLI)',
+    status: 'active',
+    shortDescription:
+      'A command-line application to manage employee data using Node.js, Express, and MySQL.',
+    description:
+      'A command-line application to manage employee data using Node.js, Express, and MySQL. Provides interactive workflows via Inquirer prompts for viewing, creating, and updating employee records. Structured output supports admin-style operations for managing employees, roles, and departments within a relational database.',
+    repoLink: 'https://github.com/wwstrothe/employee-tracker',
+    tags: ['Node.js', 'Express', 'MySQL', 'Inquirer', 'dotenv'],
+    videoUrl: 'https://drive.google.com/file/d/1LcHUaJPSaW5e5xOK6ASeEqGqL-5pezQI/view',
+  },
+  {
+    id: 'project8',
+    slug: 'react18-portfolio',
+    title: 'Personal Portfolio (React 18)',
+    status: 'archived',
+    shortDescription:
+      'A personal portfolio showcasing some of my projects, built with React 18, hosted on GitHub Pages.',
+    description:
+      'A personal portfolio showcasing some of my projects, built with React 18, hosted on GitHub Pages. The site features a clean and modern design with sections for project highlights, a brief bio, and contact information. Each project includes a description, technologies used, and links to the source code and live demos where applicable.',
+    repoLink: 'https://github.com/wwstrothe/react-portfolio',
+    tags: ['React', 'JavaScript', 'GitHub Pages'],
+  },
 ];
