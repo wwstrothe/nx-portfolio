@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
+import { SITE_CONTENT } from './data/content';
 
 @Component({
   selector: 'portfolio-root',
@@ -24,16 +25,13 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
     }
     <lib-portfolio-footer
       [title]="title"
-      emailHref="mailto:your-email@example.com"
-      linkedinHref="https://linkedin.com/in/your-linkedin"
-      githubHref="https://github.com/your-github"
+      [emailHref]="siteContent.contactEmail"
+      [linkedinHref]="siteContent.socialLinks.linkedin"
+      [githubHref]="siteContent.socialLinks.github"
     />
   `,
   styles: [
     `
-      @use 'variables' as tokens;
-      @use 'mixins' as *;
-
       :host {
         display: flex;
         flex-direction: column;
@@ -43,10 +41,10 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
       main {
         flex: 1;
         width: 100%;
-        padding: tokens.space(16) tokens.space(16);
+        padding: 1rem 1rem;
 
         @media (min-width: 768px) {
-          padding: tokens.space(24) tokens.space(24);
+          padding: 1.5rem 1.5rem;
         }
       }
 
@@ -54,18 +52,16 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.4);
-        z-index: tokens.$z-modal-backdrop;
+        z-index: 1040;
       }
     `,
   ],
 })
 export class App {
-  title = 'William Strothe';
-  links: Array<{ name: string; link: string }> = [
-    { name: 'Projects', link: '/projects' },
-    { name: 'Resume', link: '/resume' },
-  ];
   isNavOpen = false;
+  siteContent = SITE_CONTENT;
+  title = this.siteContent.title;
+  links = this.siteContent.links;
 
   onMenuOpen() {
     this.isNavOpen = true;
