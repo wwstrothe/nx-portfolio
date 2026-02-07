@@ -18,9 +18,6 @@ import { Component, input } from '@angular/core';
   `,
   styles: [
     `
-      @use 'variables' as tokens;
-      @use 'mixins' as *;
-
       .footer {
         background-color: var(--color-footer-bg);
         color: var(--color-footer-text);
@@ -29,44 +26,50 @@ import { Component, input } from '@angular/core';
       }
 
       .inner {
-        @include flex-between;
+        display: flex;
+        justify-content: space-between;
         flex-wrap: wrap;
-        gap: tokens.space(16);
-        padding: tokens.space(16) tokens.space(24);
+        gap: 1rem;
+        padding: 1rem 1.5rem;
         max-width: 1280px;
         margin: 0 auto;
+      }
 
-        @include media-md {
-          padding: tokens.space(24) tokens.space(32);
+      @media (min-width: 768px) {
+        .inner {
+          padding: 1.5rem 2rem;
         }
       }
 
       .copyright {
-        font-size: tokens.$font-size-xs;
+        font-size: 0.75rem;
         color: var(--color-footer-text-secondary);
       }
 
       .links {
-        @include flex-between;
-        gap: tokens.space(16);
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
 
-        a {
-          color: var(--color-footer-text-secondary);
-          font-size: tokens.$font-size-sm;
-          font-weight: tokens.$font-weight-medium;
-          @include transition(color, base);
+      .links a {
+        color: var(--color-footer-text-secondary);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
 
-          &:hover {
-            color: var(--color-primary);
-          }
+      .links a:hover {
+        color: var(--color-primary);
+      }
 
-          &:focus-visible {
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(tokens.$color-primary, 0.2), 0 0 0 5px tokens.$color-primary;
-            border-radius: tokens.$border-radius-sm;
-          }
-        }
+      .links a:focus-visible {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        box-shadow:
+          0 0 0 3px rgba(var(--color-primary-rgb), 0.2),
+          0 0 0 5px var(--color-primary);
+        border-radius: 0.375rem;
       }
     `,
   ],

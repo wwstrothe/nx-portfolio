@@ -7,9 +7,7 @@ import { Component, OnInit, output } from '@angular/core';
     <button
       class="theme-toggle"
       (click)="toggleTheme()"
-      [attr.aria-label]="
-        isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'
-      "
+      [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
       title="{{ isDarkMode ? 'Light mode' : 'Dark mode' }}"
     >
       <span class="icon">
@@ -19,36 +17,36 @@ import { Component, OnInit, output } from '@angular/core';
   `,
   styles: [
     `
-      @use 'variables' as tokens;
-      @use 'mixins' as *;
-
       .theme-toggle {
-        @include flex-center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 2.5rem;
         height: 2.5rem;
         padding: 0;
         background: none;
         border: 1px solid var(--color-border);
-        border-radius: tokens.$border-radius-md;
+        border-radius: 0.5rem;
         cursor: pointer;
-        transition: all tokens.$transition-base;
+        transition: all 0.2s;
         color: var(--color-text);
+      }
 
-        &:hover {
-          background-color: var(--color-bg-secondary);
-          border-color: var(--color-border-secondary);
-        }
+      .theme-toggle:hover {
+        background-color: var(--color-bg-secondary);
+        border-color: var(--color-border-secondary);
+      }
 
-        &:active {
-          transform: scale(0.95);
-        }
+      .theme-toggle:active {
+        transform: scale(0.95);
+      }
 
-        &:focus-visible {
-          outline: 2px solid transparent;
-          outline-offset: 2px;
-          box-shadow: 0 0 0 3px rgba(tokens.$color-primary, 0.2),
-            0 0 0 5px tokens.$color-primary;
-        }
+      .theme-toggle:focus-visible {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        box-shadow:
+          0 0 0 3px rgba(var(--color-primary-rgb), 0.2),
+          0 0 0 5px var(--color-primary);
       }
 
       .icon {
@@ -76,9 +74,7 @@ export class ThemeToggle implements OnInit {
       this.isDarkMode = savedTheme === 'dark';
     } else {
       // Check system preference
-      this.isDarkMode = window.matchMedia(
-        '(prefers-color-scheme: dark)'
-      ).matches;
+      this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
 
     this.applyTheme();
