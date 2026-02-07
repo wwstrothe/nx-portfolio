@@ -45,9 +45,9 @@ export function App() {
         </>
       )}
       <Footer
-        emailHref="mailto:you@example.com"
-        linkedinHref="https://linkedin.com/in/your-handle"
-        githubHref="https://github.com/your-handle"
+        emailHref="mailto:your-email@example.com"
+        linkedinHref="https://linkedin.com/in/your-linkedin"
+        githubHref="https://github.com/your-github"
       />
     </div>
   );
