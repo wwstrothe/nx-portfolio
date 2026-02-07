@@ -25,6 +25,9 @@ jobs:
           - nxApp: portfolio
             cfProject: william-strothe
             distDir: dist/apps/portfolio/browser
+          - nxApp: portfolio-react
+            cfProject: william-strothe-react
+            distDir: dist/apps/portfolio-react/browser
 
     steps:
       - uses: actions/checkout@v4
