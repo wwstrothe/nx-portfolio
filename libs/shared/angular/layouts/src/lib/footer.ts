@@ -6,7 +6,7 @@ import { Component, input } from '@angular/core';
   template: `
     <footer class="footer">
       <div class="inner">
-        <span class="copyright">© {{ year }} William Strothe</span>
+        <span class="copyright">© {{ year }} {{ title() }}</span>
 
         <div class="links">
           <a [href]="emailHref()">Email</a>
@@ -65,7 +65,8 @@ import { Component, input } from '@angular/core';
           &:focus-visible {
             outline: 2px solid transparent;
             outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(tokens.$color-primary, 0.2),
+            box-shadow:
+              0 0 0 3px rgba(tokens.$color-primary, 0.2),
               0 0 0 5px tokens.$color-primary;
             border-radius: tokens.$border-radius-sm;
           }

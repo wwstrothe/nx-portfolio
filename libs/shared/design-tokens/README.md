@@ -107,9 +107,9 @@ Notes:
 - `grid-by-columns(n)` uses `grid-auto-flow: row` + `grid-template-columns: repeat(n, 1fr)`.
 - `grid-by-rows(n)` uses `grid-auto-flow: column` + `grid-template-rows: repeat(n, auto)`.
 - Combine with `media-*` mixins to adapt layout per breakpoint.
-```
 
 Tip: Paths will vary based on where the component lives. Using global styles reduces the need for these imports.
+
 
 ### 5) Icons (Material Symbols)
 

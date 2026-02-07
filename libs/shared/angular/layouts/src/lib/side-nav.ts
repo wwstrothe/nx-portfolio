@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  input,
-  output,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, input, output, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeToggle } from './theme-toggle';
 
@@ -36,25 +29,20 @@ import { ThemeToggle } from './theme-toggle';
           </button>
 
           <nav class="links">
-            <a
-              routerLink="/projects"
-              routerLinkActive="active"
-              (click)="closeSidenav.emit()"
-              >Projects</a
-            >
-            <a
-              routerLink="/resume"
-              routerLinkActive="active"
-              (click)="closeSidenav.emit()"
-              >Resume</a
-            >
+            @for (link of links(); track $index) {
+              <a [routerLink]="link.link" routerLinkActive="active" (click)="closeSidenav.emit()">
+                {{ link.name }}
+              </a>
+            }
           </nav>
         </div>
 
-        <div class="theme-row">
-          <span class="theme-label">Theme</span>
-          <lib-portfolio-theme-toggle />
-        </div>
+        @if (themeToggle()) {
+          <div class="theme-row">
+            <span class="theme-label">Theme</span>
+            <lib-portfolio-theme-toggle />
+          </div>
+        }
       </div>
     </aside>
   `,
@@ -158,18 +146,20 @@ import { ThemeToggle } from './theme-toggle';
 })
 export class SideNav implements AfterViewInit {
   open = input<boolean>(false);
+  links = input<Array<{ name: string; link: string }>>();
+  themeToggle = input(true);
   closeSidenav = output<void>();
 
-  @ViewChild('panel') panelRef!: ElementRef<HTMLElement>;
+  panelRef = viewChild<ElementRef<HTMLElement>>('panel');
 
   onEsc() {
     this.closeSidenav.emit();
   }
 
   ngAfterViewInit() {
-    if (this.open() && this.panelRef?.nativeElement) {
+    if (this.open() && this.panelRef()?.nativeElement) {
       // Move focus to panel when opened for accessibility
-      this.panelRef.nativeElement.focus();
+      this.panelRef()?.nativeElement.focus();
     }
   }
 }
