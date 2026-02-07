@@ -5,7 +5,7 @@ const svg = require('@svgr/rollup');
 module.exports = withNx(
   {
     main: './src/index.ts',
-    outputPath: '../../../../dist/libs/shared/react/layouts-react',
+    outputPath: '../../../dist/libs/react/layouts-react',
     tsConfig: './tsconfig.lib.json',
     compiler: 'babel',
     external: ['react', 'react-dom', 'react/jsx-runtime'],
@@ -24,5 +24,5 @@ module.exports = withNx(
         limit: 10000, // 10kB
       }),
     ],
-  }
+  },
 );

@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../../../dist/out-tsc",
+    "outDir": "../../../dist/out-tsc",
     "rootDir": "src",
     "declaration": true,
     "composite": true,
@@ -9,11 +9,7 @@
     // Key setting: prefer the referenced project's .d.ts output
     "disableSourceOfProjectReferenceRedirect": true,
 
-    "types": [
-      "node",
-      "@nx/react/typings/cssmodule.d.ts",
-      "@nx/react/typings/image.d.ts"
-    ]
+    "types": ["node", "@nx/react/typings/cssmodule.d.ts", "@nx/react/typings/image.d.ts"]
   },
   "references": [{ "path": "../firebase-config-react/tsconfig.lib.json" }],
   "exclude": [
