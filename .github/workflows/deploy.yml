@@ -22,6 +22,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ======================================================
+          # Add apps here
+          # ======================================================
           - nxApp: portfolio
             cfProject: william-strothe
             distDir: dist/apps/portfolio/browser

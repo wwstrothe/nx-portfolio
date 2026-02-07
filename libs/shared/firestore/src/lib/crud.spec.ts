@@ -19,28 +19,21 @@ describe('crud helpers', () => {
   }));
 
   const setDocMock = jest.fn(
-    async (path: string, data: Record<string, unknown>, options?: SetOptions) =>
-      undefined
+    async (path: string, data: Record<string, unknown>, options?: SetOptions) => undefined
   );
 
   const addDocMock = jest.fn(
     async (path: string, data: Record<string, unknown>) => 'generated-id-123'
   );
 
-  const updateDocMock = jest.fn(
-    async (path: string, data: Record<string, unknown>) => undefined
-  );
+  const updateDocMock = jest.fn(async (path: string, data: Record<string, unknown>) => undefined);
 
   const deleteDocMock = jest.fn(async (path: string) => undefined);
 
-  const listCollectionMock = jest.fn(async (path: string) => [
-    { id: '1', name: 'A', path },
-  ]);
+  const listCollectionMock = jest.fn(async (path: string) => [{ id: '1', name: 'A', path }]);
 
   const mockDb: FirestoreAdapter = {
-    async getDoc<T extends Record<string, unknown>>(
-      path: string
-    ): Promise<WithId<T> | null> {
+    async getDoc<T extends Record<string, unknown>>(path: string): Promise<WithId<T> | null> {
       const v = await getDocMock(path);
       return v as unknown as WithId<T>;
     },
@@ -53,10 +46,7 @@ describe('crud helpers', () => {
       await setDocMock(path, data, options);
     },
 
-    async addDoc<T extends Record<string, unknown>>(
-      path: string,
-      data: T
-    ): Promise<string> {
+    async addDoc<T extends Record<string, unknown>>(path: string, data: T): Promise<string> {
       return addDocMock(path, data);
     },
 
