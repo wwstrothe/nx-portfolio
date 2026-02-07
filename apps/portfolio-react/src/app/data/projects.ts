@@ -1,4 +1,17 @@
-import { Project } from './database';
+export type Project = {
+  id: string;
+  slug: string;
+  status: 'active' | 'archived' | 'wip';
+  title: string;
+  shortDescription: string;
+  description: string;
+  repoLink: string;
+  liveLink?: string;
+  tags: string[];
+  thumbnailUrl?: string;
+  galleryUrls?: string[];
+  videoUrl?: string;
+};
 
 export const PROJECTS: Array<Project> = [
   {
@@ -18,7 +31,7 @@ export const PROJECTS: Array<Project> = [
     id: 'project2',
     slug: 'personal-portfolio-react',
     title: 'Personal Portfolio (React)',
-    status: 'active',
+    status: 'wip',
     shortDescription:
       'A full-stack personal portfolio built with React and TypeScript in an Nx monorepo.',
     description:

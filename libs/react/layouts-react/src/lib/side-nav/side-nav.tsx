@@ -46,14 +46,14 @@ export function SideNav({ open = false, onClose }: SideNavProps) {
           <nav className={styles.links}>
             <NavLink
               to="/projects"
-              className={({ isActive }) => (isActive ? 'active' : undefined)}
+              className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`.trim()}
               onClick={onClose}
             >
               Projects
             </NavLink>
             <NavLink
               to="/resume"
-              className={({ isActive }) => (isActive ? 'active' : undefined)}
+              className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`.trim()}
               onClick={onClose}
             >
               Resume

@@ -1,6 +1,36 @@
-import { Resume } from './database';
+export interface Resume {
+  name: string;
+  subHeader: string;
+  location: string;
+  cellPhone: string;
+  email: string;
+  professionalSummary: string;
+  technicalSkills: Array<{
+    category: string;
+    skills: string[];
+  }>;
+  proffesionalExperience: Array<{
+    role: string;
+    department: string;
+    company: string;
+    location: string;
+    startDate: string;
+    endDate: string | 'Present';
+    bulletPoints: string[];
+  }>;
+  projects: Array<{
+    title: string;
+    technologies: string[];
+    bulletPoints: string[];
+  }>;
+  education: Array<{
+    institution: string;
+    fieldOfStudy: string;
+    completionDate: string;
+  }>;
+}
 
-export const RESUME: Resume = {
+export const RESUME = {
   name: 'William Strothe',
   subHeader:
     'Software Engineer (TypeScript) | Frontend Architecture + Full-Stack Project Experience (Nx/Angular/React/Node)',
@@ -40,7 +70,7 @@ export const RESUME: Resume = {
       skills: ['Jest', 'React Testing Library', 'Playwright'],
     },
   ],
-  professionalExperience: [
+  proffesionalExperience: [
     {
       role: 'Information Developer',
       department: 'Capital Markets (Engineering)',

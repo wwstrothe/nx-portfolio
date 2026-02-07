@@ -2,9 +2,10 @@ import { Footer, Header, SideNav } from '@portfolio/shared/react/layouts-react';
 import { useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import styles from './app.module.scss';
-import Home from './pages/home';
-import Projects from './pages/projects';
-import Resume from './pages/resume';
+import Home from './pages/home/home';
+import Project from './pages/project/project';
+import Projects from './pages/projects/projects';
+import Resume from './pages/resume/resume';
 
 export function App() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -25,6 +26,7 @@ export function App() {
           <Route path="/" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/resume" element={<Resume />} />
+          <Route path="/project/:slug" element={<Project />} />
         </Routes>
       </main>
       {isNavOpen && (

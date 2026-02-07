@@ -8,10 +8,7 @@ export type HeaderProps = {
   brandLabel?: string;
 };
 
-export function Header({
-  onMenuOpen,
-  brandLabel = 'William Strothe',
-}: HeaderProps) {
+export function Header({ onMenuOpen, brandLabel = 'William Strothe' }: HeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
@@ -32,13 +29,17 @@ export function Header({
         <nav className={styles.nav}>
           <NavLink
             to="/projects"
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) =>
+              `${styles.navLink} ${isActive ? styles.active : ''}`.trim()
+            }
           >
             Projects
           </NavLink>
           <NavLink
             to="/resume"
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) =>
+              `${styles.navLink} ${isActive ? styles.active : ''}`.trim()
+            }
           >
             Resume
           </NavLink>
