@@ -11,18 +11,19 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
       <router-outlet />
     </main>
     @if (isNavOpen) {
-      <lib-portfolio-side-nav [links]="links" [open]="isNavOpen" (closeSidenav)="closeNav()" />
-      <div
-        class="overlay"
-        role="button"
-        tabindex="0"
-        aria-label="Close navigation"
-        (click)="closeNav()"
-        (keydown.enter)="closeNav()"
-        (keydown.space)="closeNav()"
-      ></div>
+    <lib-portfolio-side-nav [links]="links" [open]="isNavOpen" (closeSidenav)="closeNav()" />
+    <div
+      class="overlay"
+      role="button"
+      tabindex="0"
+      aria-label="Close navigation"
+      (click)="closeNav()"
+      (keydown.enter)="closeNav()"
+      (keydown.space)="closeNav()"
+    ></div>
     }
     <lib-portfolio-footer
+      [title]="title"
       emailHref="mailto:your-email@example.com"
       linkedinHref="https://linkedin.com/in/your-linkedin"
       githubHref="https://github.com/your-github"
