@@ -1,0 +1,16 @@
+{
+  "name": "firebase-config-react",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/react/firebase-config-react/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/react/firebase-config-react/jest.config.ts"
+      }
+    }
+  }
+}
