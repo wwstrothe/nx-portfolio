@@ -7,9 +7,7 @@ import { Component, OnInit, output } from '@angular/core';
     <button
       class="theme-toggle"
       (click)="toggleTheme()"
-      [attr.aria-label]="
-        isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'
-      "
+      [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
       title="{{ isDarkMode ? 'Light mode' : 'Dark mode' }}"
     >
       <span class="icon">
@@ -46,7 +44,9 @@ import { Component, OnInit, output } from '@angular/core';
       .theme-toggle:focus-visible {
         outline: 2px solid transparent;
         outline-offset: 2px;
-        box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2), 0 0 0 5px var(--color-primary);
+        box-shadow:
+          0 0 0 3px rgba(var(--color-primary-rgb), 0.2),
+          0 0 0 5px var(--color-primary);
       }
 
       .icon {
@@ -74,9 +74,7 @@ export class ThemeToggle implements OnInit {
       this.isDarkMode = savedTheme === 'dark';
     } else {
       // Check system preference
-      this.isDarkMode = window.matchMedia(
-        '(prefers-color-scheme: dark)'
-      ).matches;
+      this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
 
     this.applyTheme();

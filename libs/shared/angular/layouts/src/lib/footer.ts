@@ -66,7 +66,9 @@ import { Component, input } from '@angular/core';
       .links a:focus-visible {
         outline: 2px solid transparent;
         outline-offset: 2px;
-        box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2), 0 0 0 5px var(--color-primary);
+        box-shadow:
+          0 0 0 3px rgba(var(--color-primary-rgb), 0.2),
+          0 0 0 5px var(--color-primary);
         border-radius: 0.375rem;
       }
     `,
