@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "emulators": "pnpm exec firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data"
+    "emulator": "pnpm exec firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data"
   },
   "private": true,
   "dependencies": {
