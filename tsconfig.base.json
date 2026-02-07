@@ -25,7 +25,7 @@
       "@portfolio/shared/angular/firebase-config-angular": [
         "libs/shared/angular/firebase-config-angular/src/index.ts"
       ],
-      "@portfolio/shared/angular/layouts": ["libs/shared/angular/layouts/src/index.ts"],
+      "@portfolio/shared/angular/layouts": ["dist/libs/shared/angular/layouts"],
       "@portfolio/shared/react/firebase-config-react": [
         "libs/shared/react/firebase-config-react/src/index.ts"
       ],

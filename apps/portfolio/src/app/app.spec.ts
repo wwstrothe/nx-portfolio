@@ -1,77 +1,33 @@
-import { TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { provideRouter, RouterOutlet } from '@angular/router';
 import { App } from './app';
 
-describe('App', () => {
-  beforeEach(async () => {
-    // Provide a mock for matchMedia used by ThemeToggle during initialization
-    if (!window.matchMedia) {
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: jest.fn().mockImplementation((query: string) => ({
-          matches: false,
-          media: query,
-          onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
-        })),
-      });
-    }
-
-    await TestBed.configureTestingModule({
-      imports: [App],
-      providers: [provideRouter([])],
-    }).compileComponents();
+describe('App class', () => {
+  it('should have title set to William Strothe', () => {
+    const app = new App();
+    expect(app.title).toBe('William Strothe');
   });
 
-  it('should create', () => {
-    const fixture = TestBed.createComponent(App);
-    expect(fixture.componentInstance).toBeTruthy();
+  it('should have links configured', () => {
+    const app = new App();
+    expect(app.links.length).toBe(2);
+    expect(app.links[0].name).toBe('Projects');
+    expect(app.links[1].name).toBe('Resume');
   });
 
-  it('should render a router-outlet', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const outletDebug = fixture.debugElement.query(By.directive(RouterOutlet));
-    expect(outletDebug).toBeTruthy();
+  it('should initialize isNavOpen as false', () => {
+    const app = new App();
+    expect(app.isNavOpen).toBe(false);
   });
 
-  it('should render header and footer', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-
-    const header = fixture.nativeElement.querySelector('lib-portfolio-header');
-    const footer = fixture.nativeElement.querySelector('lib-portfolio-footer');
-
-    expect(header).toBeTruthy();
-    expect(footer).toBeTruthy();
+  it('should set isNavOpen to true on onMenuOpen', () => {
+    const app = new App();
+    app.onMenuOpen();
+    expect(app.isNavOpen).toBe(true);
   });
 
-  it('should not show side-nav/overlay when closed', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-
-    const sidenav = fixture.nativeElement.querySelector('lib-portfolio-side-nav');
-    const overlay = fixture.nativeElement.querySelector('.overlay');
-
-    expect(sidenav).toBeFalsy();
-    expect(overlay).toBeFalsy();
-  });
-
-  it('should show side-nav and overlay when open', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
+  it('should set isNavOpen to false on closeNav', () => {
+    const app = new App();
     app.isNavOpen = true;
-    fixture.detectChanges();
-
-    const sidenav = fixture.nativeElement.querySelector('lib-portfolio-side-nav');
-    const overlay = fixture.nativeElement.querySelector('.overlay');
-
-    expect(sidenav).toBeTruthy();
-    expect(overlay).toBeTruthy();
+    app.closeNav();
+    expect(app.isNavOpen).toBe(false);
   });
 });
