@@ -31,6 +31,15 @@
       ],
       "@portfolio/shared/angular/layouts": [
         "libs/shared/angular/layouts/src/index.ts"
+      ],
+      "@portfolio/shared/react/firebase-config-react": [
+        "libs/shared/react/firebase-config-react/src/index.ts"
+      ],
+      "@portfolio/shared/react/firestore-react": [
+        "libs/shared/react/firestore-react/src/index.ts"
+      ],
+      "@portfolio/shared/react/layouts-react": [
+        "libs/shared/react/layouts-react/src/index.ts"
       ]
     }
   },

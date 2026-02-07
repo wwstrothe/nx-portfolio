@@ -45,3 +45,5 @@ Thumbs.db
 
 /emulator-data
 *.log
+
+vite.config.*.timestamp*

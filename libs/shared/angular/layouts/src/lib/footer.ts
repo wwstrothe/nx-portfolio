@@ -9,15 +9,9 @@ import { Component, input } from '@angular/core';
         <span class="copyright">© {{ year }} {{ title() }}</span>
 
         <div class="links">
-          @if (email()) {
-            <a [href]="email()">Email</a>
-          }
-          @if (linkedIn()) {
-            <a [href]="linkedIn()" target="_blank" rel="noreferrer">LinkedIn</a>
-          }
-          @if (github()) {
-            <a [href]="github()" target="_blank" rel="noreferrer">GitHub</a>
-          }
+          <a [href]="emailHref()">Email</a>
+          <a [href]="linkedinHref()" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a [href]="githubHref()" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
     </footer>
@@ -69,9 +63,7 @@ import { Component, input } from '@angular/core';
           &:focus-visible {
             outline: 2px solid transparent;
             outline-offset: 2px;
-            box-shadow:
-              0 0 0 3px rgba(tokens.$color-primary, 0.2),
-              0 0 0 5px tokens.$color-primary;
+            box-shadow: 0 0 0 3px rgba(tokens.$color-primary, 0.2), 0 0 0 5px tokens.$color-primary;
             border-radius: tokens.$border-radius-sm;
           }
         }
@@ -80,9 +72,10 @@ import { Component, input } from '@angular/core';
   ],
 })
 export class Footer {
-  title = input.required<string>();
-  email = input<string>();
-  linkedIn = input<string>();
-  github = input<string>();
+  title = input<string>('');
+  emailHref = input<string>('mailto:you@example.com');
+  linkedinHref = input<string>('https://linkedin.com/in/your-handle');
+  githubHref = input<string>('https://github.com/your-handle');
+
   year = new Date().getFullYear();
 }

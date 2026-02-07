@@ -1,0 +1,26 @@
+@use '../../../../libs/shared/design-tokens/src/lib/variables' as tokens;
+@use '../../../../libs/shared/design-tokens/src/lib/mixins' as *;
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  padding: tokens.space(16) tokens.space(16);
+
+  @media (min-width: 768px) {
+    padding: tokens.space(24) tokens.space(24);
+  }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  cursor: pointer;
+}
