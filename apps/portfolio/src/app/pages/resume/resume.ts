@@ -11,7 +11,7 @@ import { Database, Resume as ResumeData } from '../../data/database';
       @if (resume(); as resumeData) {
         <!-- Download Button -->
         <div class="download-section">
-          <a href="/resume.pdf" download class="download-button">
+          <a href="pdfs/resume.pdf" download class="download-button">
             <span>⬇</span> Download Resume (PDF)
           </a>
         </div>
