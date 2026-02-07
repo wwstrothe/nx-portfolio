@@ -1,43 +1,42 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import type { Project } from '../../data/projects';
-import { PROJECTS } from '../../data/projects';
+import { Database, Project } from '../../data/database';
 
 @Component({
   selector: 'portfolio-project',
   imports: [],
   template: `
-    @if (project) {
+    @if (project(); as projectData) {
       <div class="project-detail">
         <button class="back-btn" (click)="goBack()">← Back to Projects</button>
 
-        @if (project.thumbnailUrl) {
+        @if (projectData.thumbnailUrl) {
           <div class="project-thumbnail">
-            <img [src]="project.thumbnailUrl" [alt]="project.title" />
+            <img [src]="projectData.thumbnailUrl" [alt]="projectData.title" />
           </div>
         }
 
         <div class="project-header">
-          <h1 class="project-title">{{ project.title }}</h1>
+          <h1 class="project-title">{{ projectData.title }}</h1>
           <div class="project-meta">
             <div class="tags">
-              @for (tag of project.tags; track tag) {
+              @for (tag of projectData.tags; track tag) {
                 <span class="tag">{{ tag }}</span>
               }
             </div>
-            <div class="status" [class]="'status-' + project.status">
-              {{ project.status === 'wip' ? 'Work in Progress' : project.status }}
+            <div class="status" [class]="'status-' + projectData.status">
+              {{ projectData.status === 'wip' ? 'Work in Progress' : projectData.status }}
             </div>
           </div>
         </div>
 
         <div class="project-content">
-          <p class="project-description">{{ project.description }}</p>
+          <p class="project-description">{{ projectData.description }}</p>
 
-          @if (project.videoUrl) {
+          @if (projectData.videoUrl) {
             <div class="project-video">
               <iframe
-                [src]="project.videoUrl"
+                [src]="projectData.videoUrl"
                 width="100%"
                 height="600"
                 frameborder="0"
@@ -47,13 +46,13 @@ import { PROJECTS } from '../../data/projects';
             </div>
           }
 
-          @if (project.galleryUrls && project.galleryUrls.length > 0) {
+          @if (projectData.galleryUrls && projectData.galleryUrls.length > 0) {
             <div class="project-gallery">
               <h3>Gallery</h3>
               <div class="gallery-grid">
-                @for (imageUrl of project.galleryUrls; track imageUrl) {
+                @for (imageUrl of projectData.galleryUrls; track imageUrl) {
                   <div class="gallery-item">
-                    <img [src]="imageUrl" [alt]="project.title" />
+                    <img [src]="imageUrl" [alt]="projectData.title" />
                   </div>
                 }
               </div>
@@ -63,16 +62,16 @@ import { PROJECTS } from '../../data/projects';
           <div class="project-links">
             <a
               class="link-btn primary"
-              [href]="project.repoLink"
+              [href]="projectData.repoLink"
               target="_blank"
               rel="noopener noreferrer"
             >
               View Repository
             </a>
-            @if (project.liveLink) {
+            @if (projectData.liveLink) {
               <a
                 class="link-btn secondary"
-                [href]="project.liveLink"
+                [href]="projectData.liveLink"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -91,16 +90,29 @@ import { PROJECTS } from '../../data/projects';
   `,
   styleUrls: ['./project.scss'],
 })
-export default class ProjectDetail implements OnInit {
+export default class ProjectDetail {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private database = inject(Database);
 
-  project: Project | null = null;
+  protected project!: Signal<Project | null>;
 
-  ngOnInit() {
+  constructor() {
+    // set initial project signal based on current route (and update on param changes)
+    const setProjectFromSlug = (slug?: string) => {
+      if (slug) {
+        this.project = this.database.getProjectSignal(slug);
+      } else {
+        // fallback to a null computed signal
+        this.project = computed(() => null);
+      }
+    };
+
+    const initialSlug = this.route.snapshot.params['slug'];
+    setProjectFromSlug(initialSlug);
+
     this.route.params.subscribe((params) => {
-      const slug = params['slug'];
-      this.project = PROJECTS.find((p) => p.slug === slug) || null;
+      setProjectFromSlug(params['slug']);
     });
   }
 

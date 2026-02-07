@@ -1,18 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
-import { SITE_CONTENT } from './data/content';
+import { Database, SiteContent } from './data/database';
 
 @Component({
   selector: 'portfolio-root',
   imports: [RouterOutlet, SideNav, Footer, Header],
   template: `
-    <lib-portfolio-header [title]="title" [links]="links" (menuOpen)="onMenuOpen()" />
+    <lib-portfolio-header [title]="title()" [links]="links()" (menuOpen)="onMenuOpen()" />
     <main>
       <router-outlet />
     </main>
     @if (isNavOpen) {
-      <lib-portfolio-side-nav [links]="links" [open]="isNavOpen" (closeSidenav)="closeNav()" />
+      <lib-portfolio-side-nav [links]="links()" [open]="isNavOpen" (closeSidenav)="closeNav()" />
       <div
         class="overlay"
         role="button"
@@ -23,12 +23,14 @@ import { SITE_CONTENT } from './data/content';
         (keydown.space)="closeNav()"
       ></div>
     }
-    <lib-portfolio-footer
-      [title]="title"
-      [emailHref]="siteContent.contactEmail"
-      [linkedinHref]="siteContent.socialLinks.linkedin"
-      [githubHref]="siteContent.socialLinks.github"
-    />
+    @if (siteContent(); as siteContent) {
+      <lib-portfolio-footer
+        [title]="title()"
+        [emailHref]="siteContent.contactEmail"
+        [linkedinHref]="siteContent.socialLinks.linkedin"
+        [githubHref]="siteContent.socialLinks.github"
+      />
+    }
   `,
   styles: [
     `
@@ -59,9 +61,11 @@ import { SITE_CONTENT } from './data/content';
 })
 export class App {
   isNavOpen = false;
-  siteContent = SITE_CONTENT;
-  title = this.siteContent.title;
-  links = this.siteContent.links;
+  // siteContent = SITE_CONTENT;
+  database = inject(Database);
+  siteContent = this.database.siteContent as () => SiteContent | null;
+  title = computed(() => this.siteContent()?.title || '');
+  links = computed(() => this.siteContent()?.links);
 
   onMenuOpen() {
     this.isNavOpen = true;
