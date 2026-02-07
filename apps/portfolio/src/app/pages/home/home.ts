@@ -38,6 +38,6 @@ export default class Home {
 
   constructor() {
     // * Uncomment the line below to reset the database with the raw data
-    this.database.saveInitialData();
+    // this.database.saveInitialData();
   }
 }
