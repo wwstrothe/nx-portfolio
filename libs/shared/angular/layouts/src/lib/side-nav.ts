@@ -48,9 +48,6 @@ import { ThemeToggle } from './theme-toggle';
   `,
   styles: [
     `
-      @use 'variables' as tokens;
-      @use 'mixins' as *;
-
       .sidenav {
         position: fixed;
         top: 0;
@@ -60,10 +57,10 @@ import { ThemeToggle } from './theme-toggle';
         width: 280px;
         background: var(--color-bg);
         border-left: 1px solid var(--color-border);
-        box-shadow: tokens.$shadow-lg;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         transform: translateX(100%);
-        transition: transform tokens.$transition-fast;
-        z-index: tokens.$z-modal;
+        transition: transform 0.15s;
+        z-index: 100;
         display: flex;
         flex-direction: column;
       }
@@ -76,19 +73,21 @@ import { ThemeToggle } from './theme-toggle';
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        gap: tokens.space(16);
-        padding: tokens.space(16) tokens.space(24);
+        gap: 1rem;
+        padding: 1rem 1.5rem;
         height: 100%;
+      }
 
-        @include media-md {
-          padding: tokens.space(24) tokens.space(32);
+      @media (min-width: 768px) {
+        .inner {
+          padding: 1.5rem 2rem;
         }
       }
 
       .content {
         display: flex;
         flex-direction: column;
-        gap: tokens.space(16);
+        gap: 1rem;
       }
 
       .close-btn {
@@ -96,50 +95,51 @@ import { ThemeToggle } from './theme-toggle';
         width: 2.5rem;
         height: 2.5rem;
         border: 1px solid var(--color-border);
-        border-radius: tokens.$border-radius-md;
+        border-radius: 0.5rem;
         background: var(--color-bg);
         color: var(--color-text);
         font-size: 1.25rem;
         cursor: pointer;
-        @include transition(background-color, base);
+        transition: background-color 0.2s;
+      }
 
-        &:hover {
-          background-color: var(--color-bg-secondary);
-        }
+      .close-btn:hover {
+        background-color: var(--color-bg-secondary);
       }
 
       .links {
         display: flex;
         flex-direction: column;
-        gap: tokens.space(12);
+        gap: 0.75rem;
+      }
 
-        a {
-          color: var(--color-text);
-          font-size: tokens.$font-size-md;
-          @include transition(color, base);
+      .links a {
+        color: var(--color-text);
+        font-size: 1rem;
+        transition: color 0.2s;
+      }
 
-          &:hover {
-            color: var(--color-primary);
-          }
-          &.active {
-            color: var(--color-primary);
-          }
-        }
+      .links a:hover {
+        color: var(--color-primary);
+      }
+
+      .links a.active {
+        color: var(--color-primary);
       }
 
       .theme-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: tokens.space(12);
-        padding-top: tokens.space(12);
+        gap: 0.75rem;
+        padding-top: 0.75rem;
         border-top: 1px solid var(--color-border-secondary);
         margin-top: auto;
       }
 
       .theme-label {
         color: var(--color-text-secondary);
-        font-size: tokens.$font-size-sm;
+        font-size: 0.875rem;
       }
     `,
   ],
