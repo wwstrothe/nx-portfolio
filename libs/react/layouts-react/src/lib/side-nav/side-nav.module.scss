@@ -63,17 +63,17 @@
   gap: 0.75rem;
 }
 
-.links a {
+.link {
   color: var(--color-text);
   font-size: 1rem;
   transition: color 0.2s;
 }
 
-.links a:hover {
+.link:hover {
   color: var(--color-primary);
 }
 
-.links a.active {
+.active {
   color: var(--color-primary);
 }
 

@@ -68,7 +68,7 @@
   }
 }
 
-.nav a {
+.navLink {
   color: var(--color-text-secondary);
   font-weight: 500;
   font-size: 1rem;
@@ -76,15 +76,15 @@
   position: relative;
 }
 
-.nav a:hover {
+.navLink:hover {
   color: var(--color-primary);
 }
 
-.nav a.active {
+.active {
   color: var(--color-primary);
 }
 
-.nav a.active::after {
+.active::after {
   content: '';
   position: absolute;
   bottom: -0.5rem;

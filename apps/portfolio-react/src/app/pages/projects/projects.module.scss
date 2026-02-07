@@ -1,0 +1,91 @@
+.sectionTitle {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: var(--color-primary);
+}
+
+.projects {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .projects {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.projectCard {
+  padding: 1.5rem;
+  background-color: var(--color-bg-secondary);
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 250ms ease-in-out;
+}
+
+.projectCard:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.projectCard:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.tag {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 0.25rem;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.statusActive {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.statusWip {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.statusArchived {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.links a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
