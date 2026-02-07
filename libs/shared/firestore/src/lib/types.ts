@@ -1,4 +1,4 @@
-export type DocPath = string;        // e.g. "users/abc"
+export type DocPath = string; // e.g. "users/abc"
 export type CollectionPath = string; // e.g. "users"
 
 export type WithId<T> = T & { id: string };
@@ -23,10 +23,12 @@ export interface FirestoreAdapter {
     options?: SetOptions
   ): Promise<void>;
 
-  updateDoc<T extends Record<string, unknown>>(
-    path: DocPath,
-    data: Partial<T>
-  ): Promise<void>;
+  addDoc<T extends Record<string, unknown>>(
+    collectionPath: CollectionPath,
+    data: T
+  ): Promise<string>;
+
+  updateDoc<T extends Record<string, unknown>>(path: DocPath, data: Partial<T>): Promise<void>;
 
   deleteDoc(path: DocPath): Promise<void>;
 

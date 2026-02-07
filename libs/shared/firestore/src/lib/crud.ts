@@ -1,10 +1,4 @@
-import type {
-  CollectionPath,
-  DocPath,
-  FirestoreAdapter,
-  SetOptions,
-  WithId,
-} from './types';
+import type { CollectionPath, DocPath, FirestoreAdapter, SetOptions, WithId } from './types';
 
 export async function getByPath<T extends Record<string, unknown>>(
   db: FirestoreAdapter,
@@ -22,6 +16,14 @@ export async function setByPath<T extends Record<string, unknown>>(
   return db.setDoc<T>(docPath, data, options);
 }
 
+export async function addByPath<T extends Record<string, unknown>>(
+  db: FirestoreAdapter,
+  collectionPath: CollectionPath,
+  data: T
+): Promise<string> {
+  return db.addDoc<T>(collectionPath, data);
+}
+
 export async function updateByPath<T extends Record<string, unknown>>(
   db: FirestoreAdapter,
   docPath: DocPath,
@@ -30,10 +32,7 @@ export async function updateByPath<T extends Record<string, unknown>>(
   return db.updateDoc<T>(docPath, data);
 }
 
-export async function deleteByPath(
-  db: FirestoreAdapter,
-  docPath: DocPath
-): Promise<void> {
+export async function deleteByPath(db: FirestoreAdapter, docPath: DocPath): Promise<void> {
   return db.deleteDoc(docPath);
 }
 

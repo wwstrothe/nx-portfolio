@@ -1,7 +1,6 @@
 name: Deploy (Cloudflare Pages)
 
 on:
-  # Auto-deploy previews and beta on push (but NOT main)
   push:
     branches:
       - 'main'
@@ -29,6 +28,9 @@ jobs:
           - nxApp: portfolio
             cfProject: william-strothe
             distDir: dist/apps/portfolio/browser
+          - nxApp: portfolio-react
+            cfProject: william-strothe-react
+            distDir: dist/apps/portfolio-react
 
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +46,16 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # ✅ Nx Cloud token selection (RW for main/beta, read for everything else)
+      - name: Set Nx Cloud token
+        shell: bash
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ] || [ "${{ github.ref_name }}" = "beta" ]; then
+            echo "NX_CLOUD_ACCESS_TOKEN=${{ secrets.NX_CLOUD_ACCESS_TOKEN_RW }}" >> $GITHUB_ENV
+          else
+            echo "NX_CLOUD_ACCESS_TOKEN=${{ secrets.NX_CLOUD_ACCESS_TOKEN_READ }}" >> $GITHUB_ENV
+          fi
 
       - name: Build ${{ matrix.nxApp }}
         run: pnpm exec nx build ${{ matrix.nxApp }} --configuration=production

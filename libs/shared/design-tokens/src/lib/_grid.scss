@@ -1,0 +1,52 @@
+// Grid Utilities
+// Responsive grid helpers supporting placement by columns or rows
+
+@use './variables' as tokens;
+@use './mixins' as *;
+
+// ---------------------------------------------------------------------------
+// Mixins
+// ---------------------------------------------------------------------------
+
+// Base grid with configurable gap
+@mixin grid($gap: tokens.space(16)) {
+  display: grid;
+  gap: $gap;
+}
+
+// Place items left-to-right, wrapping after N columns
+// Example: @include grid-by-columns(3); // 3 columns
+@mixin grid-by-columns($columns, $colSize: 1fr, $gap: tokens.space(16)) {
+  @include grid($gap);
+  grid-auto-flow: row;
+  grid-template-columns: repeat($columns, $colSize);
+}
+
+// Place items top-to-bottom, wrapping after N rows
+// Example: @include grid-by-rows(2); // 2 rows
+@mixin grid-by-rows($rows, $rowSize: auto, $gap: tokens.space(16)) {
+  @include grid($gap);
+  grid-auto-flow: column;
+  grid-template-rows: repeat($rows, $rowSize);
+}
+
+// Responsive helpers
+// Usage:
+// .cards { @include grid-by-columns(1); @include media-md { @include grid-by-columns(2); } }
+
+// ---------------------------------------------------------------------------
+// Optional utility classes
+// ---------------------------------------------------------------------------
+
+.grid { @include grid(tokens.space(16)); }
+
+// Wrap after columns
+.grid-cols-1 { @include grid-by-columns(1); }
+.grid-cols-2 { @include grid-by-columns(2); }
+.grid-cols-3 { @include grid-by-columns(3); }
+.grid-cols-4 { @include grid-by-columns(4); }
+
+// Wrap after rows
+.grid-rows-1 { @include grid-by-rows(1); }
+.grid-rows-2 { @include grid-by-rows(2); }
+.grid-rows-3 { @include grid-by-rows(3); }

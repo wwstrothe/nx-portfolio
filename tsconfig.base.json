@@ -16,10 +16,21 @@
     "baseUrl": ".",
     "paths": {
       "@portfolio/shared/config": ["libs/shared/config/src/index.ts"],
-      "@portfolio/shared/firebase-core": [
-        "libs/shared/firebase-core/src/index.ts"
+      "@portfolio/shared/firebase-core": ["libs/shared/firebase-core/src/index.ts"],
+      "@portfolio/shared/firestore": ["libs/shared/firestore/src/index.ts"],
+      "@portfolio/shared/design-tokens": ["libs/shared/design-tokens/src/index.ts"],
+      "@portfolio/shared/angular/firestore-angular": [
+        "libs/shared/angular/firestore-angular/src/index.ts"
       ],
-      "@portfolio/shared/firestore": ["libs/shared/firestore/src/index.ts"]
+      "@portfolio/shared/angular/firebase-config-angular": [
+        "libs/shared/angular/firebase-config-angular/src/index.ts"
+      ],
+      "@portfolio/shared/angular/layouts": ["libs/shared/angular/layouts/src/index.ts"],
+      "@portfolio/shared/react/firebase-config-react": [
+        "libs/shared/react/firebase-config-react/src/index.ts"
+      ],
+      "@portfolio/shared/react/firestore-react": ["libs/shared/react/firestore-react/src/index.ts"],
+      "@portfolio/shared/react/layouts-react": ["libs/shared/react/layouts-react/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

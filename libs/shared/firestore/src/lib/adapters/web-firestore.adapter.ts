@@ -3,6 +3,7 @@ import { Observable as RxObservable } from 'rxjs';
 
 import type { Firestore } from 'firebase/firestore';
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -29,9 +30,8 @@ function toFirestoreSetOptions(options?: SetOptions) {
   return options ? { merge: options.merge } : undefined;
 }
 
-export function createWebFirestoreAdapter(
-  db: Firestore
-): FirestoreAdapter &
+export type { QueryConstraint };
+export function createWebFirestoreAdapter(db: Firestore): FirestoreAdapter &
   BatchAdapter & {
     listenDoc$<T extends Record<string, unknown>>(docPath: string): Observable<WithId<T> | null>;
     listenCollection$<T extends Record<string, unknown>>(
@@ -58,6 +58,15 @@ export function createWebFirestoreAdapter(
       else await setDoc(ref, data as unknown as DocumentData);
     },
 
+    async addDoc<T extends Record<string, unknown>>(
+      collectionPath: string,
+      data: T
+    ): Promise<string> {
+      const ref = collection(db, collectionPath);
+      const docRef = await addDoc(ref, data as unknown as DocumentData);
+      return docRef.id;
+    },
+
     async updateDoc<T extends Record<string, unknown>>(
       path: string,
       data: Partial<T>
@@ -70,7 +79,9 @@ export function createWebFirestoreAdapter(
       await deleteDoc(doc(db, path));
     },
 
-    async listCollection<T extends Record<string, unknown>>(path: string): Promise<Array<WithId<T>>> {
+    async listCollection<T extends Record<string, unknown>>(
+      path: string
+    ): Promise<Array<WithId<T>>> {
       const snap = await getDocs(collection(db, path));
       return snap.docs.map((d) => withId<T>(d.id, d.data() as T));
     },
@@ -131,6 +142,3 @@ export function createWebFirestoreAdapter(
     },
   };
 }
-
-export type { QueryConstraint };
-

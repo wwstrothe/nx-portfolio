@@ -1,7 +1,4 @@
-import {
-  workspaceConfig,
-  type FirebaseProjectKey,
-} from '@portfolio/shared/config';
+import { workspaceConfig, type FirebaseProjectKey } from '@portfolio/shared/config';
 import express from 'express';
 import { getFirestore, type Target } from './firebase-admin';
 
@@ -19,9 +16,7 @@ app.get('/health', (_req, res) => {
  * In prod you’ll later remove "emulator" from this list server-side.
  */
 app.get('/targets', (_req, res) => {
-  const projectKeys = Object.keys(
-    workspaceConfig.firebase.projects
-  ) as FirebaseProjectKey[];
+  const projectKeys = Object.keys(workspaceConfig.firebase.projects) as FirebaseProjectKey[];
   res.json({
     targets: ['emulator', ...projectKeys],
   });
@@ -30,12 +25,11 @@ app.get('/targets', (_req, res) => {
 /**
  * Lists TOP-LEVEL collection names for a target.
  * /collections?target=emulator
- * /collections?target=portfolio
+ * /collections?target=personal-project
  */
 app.get('/collections', async (req, res) => {
   const target = req.query.target as Target | undefined;
-  if (!target)
-    return res.status(400).json({ error: 'Missing query param: target' });
+  if (!target) return res.status(400).json({ error: 'Missing query param: target' });
 
   try {
     const db = getFirestore(target);
