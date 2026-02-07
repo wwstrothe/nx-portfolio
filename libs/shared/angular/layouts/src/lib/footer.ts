@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'lib-portfolio-footer',
@@ -9,19 +9,11 @@ import { Component } from '@angular/core';
         <span class="copyright">© {{ year }} William Strothe</span>
 
         <div class="links">
-          <a href="mailto:you@example.com">Email</a>
-          <a
-            href="https://linkedin.com/in/your-handle"
-            target="_blank"
-            rel="noreferrer"
+          <a [href]="emailHref()">Email</a>
+          <a [href]="linkedinHref()" target="_blank" rel="noreferrer"
             >LinkedIn</a
           >
-          <a
-            href="https://github.com/your-handle"
-            target="_blank"
-            rel="noreferrer"
-            >GitHub</a
-          >
+          <a [href]="githubHref()" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
     </footer>
@@ -83,5 +75,9 @@ import { Component } from '@angular/core';
   ],
 })
 export class Footer {
+  emailHref = input<string>('mailto:you@example.com');
+  linkedinHref = input<string>('https://linkedin.com/in/your-handle');
+  githubHref = input<string>('https://github.com/your-handle');
+
   year = new Date().getFullYear();
 }

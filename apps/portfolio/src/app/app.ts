@@ -22,7 +22,11 @@ import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
       (keydown.space)="closeNav()"
     ></div>
     }
-    <lib-portfolio-footer />
+    <lib-portfolio-footer
+      emailHref="mailto:your-email@example.com"
+      linkedinHref="https://linkedin.com/in/your-linkedin"
+      githubHref="https://github.com/your-github"
+    />
   `,
   styles: [
     `
