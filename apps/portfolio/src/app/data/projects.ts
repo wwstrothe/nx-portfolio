@@ -17,7 +17,7 @@ export const PROJECTS: Array<Project> = [
   {
     id: 'project1',
     slug: 'personal-portfolio-angular',
-    status: 'wip',
+    status: 'active',
     title: 'Personal Portfolio (Angular)',
     shortDescription:
       'A full-stack personal portfolio built with Angular and TypeScript in an Nx monorepo.',

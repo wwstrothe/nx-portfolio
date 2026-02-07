@@ -7,20 +7,12 @@ import { SITE_CONTENT } from './data/content';
   selector: 'portfolio-root',
   imports: [RouterOutlet, SideNav, Footer, Header],
   template: `
-    <lib-portfolio-header
-      [title]="siteContent.title"
-      [links]="siteContent.links"
-      (menuOpen)="onMenuOpen()"
-    />
+    <lib-portfolio-header [title]="title" [links]="links" (menuOpen)="onMenuOpen()" />
     <main>
       <router-outlet />
     </main>
     @if (isNavOpen) {
-      <lib-portfolio-side-nav
-        [links]="siteContent.links"
-        [open]="isNavOpen"
-        (closeSidenav)="closeNav()"
-      />
+      <lib-portfolio-side-nav [links]="links" [open]="isNavOpen" (closeSidenav)="closeNav()" />
       <div
         class="overlay"
         role="button"
@@ -32,7 +24,7 @@ import { SITE_CONTENT } from './data/content';
       ></div>
     }
     <lib-portfolio-footer
-      [title]="siteContent.title"
+      [title]="title"
       [emailHref]="siteContent.contactEmail"
       [linkedinHref]="siteContent.socialLinks.linkedin"
       [githubHref]="siteContent.socialLinks.github"
@@ -68,6 +60,8 @@ import { SITE_CONTENT } from './data/content';
 export class App {
   isNavOpen = false;
   siteContent = SITE_CONTENT;
+  title = this.siteContent.title;
+  links = this.siteContent.links;
 
   onMenuOpen() {
     this.isNavOpen = true;
