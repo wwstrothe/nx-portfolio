@@ -1,221 +1,169 @@
-import { JsonPipe } from '@angular/common';
-import { Component, DestroyRef, inject, isDevMode, Signal, signal } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FirestoreService } from '@portfolio/shared/angular/firestore-angular';
-import { catchError, finalize, map, of, startWith } from 'rxjs';
-
-type TestDoc = {
-  id?: string;
-  message: string;
-  createdAt: number;
-  updatedAt?: number;
-};
-
-type EnvKey = 'emulator' | 'live';
-
-type LoadState<T> = {
-  data: Array<T>;
-  isLoading: boolean;
-  error: string | null;
-};
-
-type SavingState = {
-  isSaving: boolean;
-  savingError: string | null;
-  message: string | null;
-};
-
-type EnvEntry = {
-  key: EnvKey;
-  label: string;
-  vm: Signal<LoadState<TestDoc>>;
-};
-
-const PROJECT_KEY = 'personal-project',
-  COLLECTION_PATH = 'test';
+import { Component } from '@angular/core';
+import Projects from './projects';
+import { SITE_CONTENT } from '../data/content';
 
 @Component({
   selector: 'portfolio-home',
-  imports: [JsonPipe],
+  imports: [Projects],
   template: `
-    <div>
-      @for (env of envs; track env.key) {
-        @if (env.key !== 'emulator' || isDev) {
-          @let vm = env.vm(); @let envState = state()[env.key];
-          <section>
-            <h2>{{ env.label }}</h2>
-
-            @if (vm.isLoading) {
-              <p>Loading {{ env.label }} data…</p>
-            } @else if (vm.error) {
-              <p class="error">Error loading {{ env.label }}: {{ vm.error }}</p>
-            } @else {
-              <div>
-                <button (click)="addDoc(env)">Add document</button>
-                <span
-                  >Live docs: <b>{{ vm.data.length }}</b></span
-                >
+    <div class="home-page">
+      <div class="content">
+        <div class="intro-section">
+          <div class="header">{{ siteContent.header }}</div>
+          <div class="sub-header">{{ siteContent.subHeader }}</div>
+        </div>
+        <div class="main-grid">
+          <div class="about-section">
+            <div class="about-me">{{ siteContent.aboutMe }}</div>
+          </div>
+          <div class="profile-section">
+            <div class="profile-picture-container">
+              <div class="profile-picture">
+                <img [src]="siteContent.profilePicture" alt="Will Strothe" />
               </div>
-
-              @if (envState.isSaving) {
-                <p>Saving to {{ env.label }}… {{ envState.message }}</p>
-              }
-              @if (envState.savingError) {
-                <p class="error">Save error: {{ envState.savingError }}</p>
-              }
-              @for (item of vm.data; track item.id) {
-                <div>
-                  <div>{{ item.message }}</div>
-                  <div>
-                    <button (click)="quickEdit(env, item)">Quick edit</button>
-                    <button (click)="deleteDoc(env, item)">Delete</button>
-                  </div>
-                </div>
-              }
-
-              <details>
-                <summary>Raw JSON</summary>
-                <pre>{{ vm.data | json }}</pre>
-              </details>
-            }
-          </section>
-        }
-        <hr />
-      }
+            </div>
+          </div>
+        </div>
+      </div>
+      <portfolio-projects [useShortDescription]="true" />
     </div>
   `,
+  styles: [
+    `
+      .home-page {
+        background-color: var(--color-bg);
+        transition: background-color 250ms ease-in-out;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 4rem;
+
+        @media (min-width: 768px) {
+          padding: 3rem 4rem;
+        }
+      }
+
+      .content {
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+
+      .intro-section {
+        text-align: center;
+        margin-bottom: 4rem;
+      }
+
+      .header {
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+        font-size: 2.25rem;
+        font-weight: 700;
+        line-height: 1.2;
+
+        @media (min-width: 768px) {
+          font-size: 3rem;
+        }
+
+        @media (min-width: 1024px) {
+          font-size: 3.5rem;
+        }
+      }
+
+      .sub-header {
+        font-size: 1.125rem;
+        font-weight: 400;
+        line-height: 1.75;
+        color: var(--color-text-secondary);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+      }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 4rem;
+        align-items: start;
+
+        @media (min-width: 1024px) {
+          grid-template-columns: 1.5fr 1fr;
+          gap: 4rem;
+        }
+      }
+
+      .about-section {
+        order: 2;
+
+        @media (min-width: 1024px) {
+          order: 1;
+        }
+      }
+
+      .about-me {
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.75;
+        color: var(--color-text);
+        padding: 1.5rem 2rem;
+        background-color: var(--color-bg-secondary);
+        border-radius: 1rem;
+        border-left: 4px solid var(--color-primary);
+        transition: box-shadow 250ms ease-in-out;
+      }
+
+      .about-me:hover {
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
+      .profile-section {
+        order: 1;
+        display: flex;
+        justify-content: center;
+
+        @media (min-width: 1024px) {
+          order: 2;
+          justify-content: flex-end;
+        }
+      }
+
+      .profile-picture-container {
+        position: relative;
+        width: 100%;
+        max-width: 320px;
+        aspect-ratio: 1;
+      }
+
+      .profile-picture {
+        width: 100%;
+        height: 100%;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 3px solid var(--color-primary);
+        transition:
+          transform 250ms ease-in-out,
+          box-shadow 250ms ease-in-out;
+      }
+
+      .profile-picture:hover {
+        transform: scale(1.02);
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      .profile-picture img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+    `,
+  ],
 })
 export default class Home {
-  private readonly firestoreService = inject(FirestoreService);
-  private readonly destroyRef = inject(DestroyRef);
-  protected readonly isDev = isDevMode();
-
-  protected state = signal<Record<EnvKey, SavingState>>({
-    emulator: { isSaving: false, savingError: null, message: null },
-    live: { isSaving: false, savingError: null, message: null },
-  });
-
-  private readonly liveVm = this.createCollectionVm('live');
-  private readonly emulatorVm = this.isDev ? this.createCollectionVm('emulator') : this.liveVm;
-
-  readonly envs: EnvEntry[] = [
-    { key: 'emulator', label: 'Emulator', vm: this.emulatorVm },
-    { key: 'live', label: 'Production', vm: this.liveVm },
-  ];
-
-  private createCollectionVm(target: EnvKey): Signal<LoadState<TestDoc>> {
-    const stream$ = this.firestoreService
-      .listenCollection$<TestDoc>(PROJECT_KEY, target, COLLECTION_PATH)
-      .pipe(
-        map((docs) => ({
-          data: this.firestoreService.sortDocs<TestDoc>(docs, ['updatedAt', 'createdAt']),
-          isLoading: false,
-          error: null,
-        })),
-        startWith<LoadState<TestDoc>>({
-          data: [],
-          isLoading: true,
-          error: null,
-        }),
-        catchError((err) =>
-          of<LoadState<TestDoc>>({
-            data: [],
-            isLoading: false,
-            error: this.formatError(err),
-          }),
-        ),
-      );
-
-    return toSignal(stream$, {
-      initialValue: { data: [], isLoading: true, error: null },
-    });
-  }
-
-  private beginSaving(envKey: EnvKey, message: string) {
-    this.state.update((prev) => ({
-      ...prev,
-      [envKey]: {
-        ...prev[envKey],
-        isSaving: true,
-        savingError: null,
-        message,
-      },
-    }));
-  }
-
-  private finishSaving(envKey: EnvKey) {
-    this.state.update((prev) => ({
-      ...prev,
-      [envKey]: {
-        ...prev[envKey],
-        isSaving: false,
-        message: null,
-      },
-    }));
-  }
-
-  private failSaving(envKey: EnvKey, error: unknown) {
-    this.state.update((prev) => ({
-      ...prev,
-      [envKey]: {
-        ...prev[envKey],
-        isSaving: false,
-        message: null,
-        savingError: this.formatError(error),
-      },
-    }));
-  }
-
-  private formatError(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return String(error);
-  }
-
-  addDoc(env: EnvEntry) {
-    this.beginSaving(env.key, 'Sending new document');
-    this.firestoreService
-      .addByPath$<TestDoc>(PROJECT_KEY, env.key, COLLECTION_PATH, {
-        message: `Hello from Angular (${env.label}) @ ${new Date().toLocaleTimeString()}`,
-        createdAt: Date.now(),
-      })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.finishSaving(env.key)),
-      )
-      .subscribe({
-        error: (err) => this.failSaving(env.key, err),
-      });
-  }
-
-  quickEdit(env: EnvEntry, item: TestDoc) {
-    const docRef = `${COLLECTION_PATH}/${item.id}`;
-    this.beginSaving(env.key, 'Updating document');
-    this.firestoreService
-      .updateByPath$<TestDoc>(PROJECT_KEY, env.key, docRef, {
-        message: `${item.message}|`,
-        updatedAt: Date.now(),
-      })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.finishSaving(env.key)),
-      )
-      .subscribe({
-        error: (err) => this.failSaving(env.key, err),
-      });
-  }
-
-  deleteDoc(env: EnvEntry, item: TestDoc) {
-    const docRef = `${COLLECTION_PATH}/${item.id}`;
-    this.beginSaving(env.key, 'Deleting document');
-    this.firestoreService
-      .deleteByPath$(PROJECT_KEY, env.key, docRef)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.finishSaving(env.key)),
-      )
-      .subscribe({
-        error: (err) => this.failSaving(env.key, err),
-      });
-  }
+  siteContent = SITE_CONTENT;
 }

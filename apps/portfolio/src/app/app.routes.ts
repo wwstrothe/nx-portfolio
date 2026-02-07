@@ -10,7 +10,7 @@ export const appRoutes: Route[] = [
     loadComponent: () => import('./pages/projects'),
   },
   {
-    path: 'project/:id',
+    path: 'project/:slug',
     loadComponent: () => import('./pages/project'),
   },
   {

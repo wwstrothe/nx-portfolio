@@ -60,7 +60,7 @@ import { ThemeToggle } from './theme-toggle';
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         transform: translateX(100%);
         transition: transform 0.15s;
-        z-index: 100;
+        z-index: 1050;
         display: flex;
         flex-direction: column;
       }
