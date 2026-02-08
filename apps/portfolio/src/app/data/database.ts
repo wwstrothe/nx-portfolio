@@ -1,8 +1,8 @@
 import { computed, DestroyRef, inject, Injectable, isDevMode, signal, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FirestoreService } from '@portfolio/shared/angular/firestore-angular';
-import { forkJoin } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { SITE_CONTENT } from './content';
 import { PROJECTS } from './projects';
 import { RESUME } from './resume';
@@ -217,4 +217,31 @@ export class Database {
     if (statuses.every((s) => s === 'complete')) return 'complete';
     return 'idle';
   });
+
+  dataFromLiveToEmulator() {
+    return this.firestoreService
+      .listenCollection$<PortfolioData>(PROJECT_KEY, 'live', COLLECTION_PATH)
+      .pipe(
+        switchMap((docs) =>
+          forkJoin(
+            docs.map((doc) =>
+              this.firestoreService
+                .setByPath$(PROJECT_KEY, 'emulator', `${COLLECTION_PATH}/${doc.id}`, doc)
+                .pipe(
+                  tap(() => console.log(`Copied ${doc.id} to emulator`)),
+                  catchError((err) => {
+                    console.error(`Error copying ${doc.id}:`, err);
+                    return of(null);
+                  }),
+                ),
+            ),
+          ),
+        ),
+        catchError((err) => {
+          console.error('Error fetching live data:', err);
+          return of(null);
+        }),
+      )
+      .subscribe();
+  }
 }
