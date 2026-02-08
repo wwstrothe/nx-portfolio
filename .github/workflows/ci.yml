@@ -65,7 +65,7 @@ jobs:
 
       - name: E2E
         if: ${{ github.event_name == 'push' }}
-        run: pnpm exec nx e2e portfolio-e2e
+        run: pnpm exec nx e2e portfolio-e2e portfolio-react-e2e
 
       - name: Nx fix-ci
         if: always()

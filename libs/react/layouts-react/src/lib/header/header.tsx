@@ -12,7 +12,7 @@ export function Header({ onMenuOpen, brandLabel = 'William Strothe' }: HeaderPro
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link className={styles.brand} to="/">
+        <Link className={styles.brand} to="/" data-testid="brand">
           {brandLabel}
         </Link>
         <button
