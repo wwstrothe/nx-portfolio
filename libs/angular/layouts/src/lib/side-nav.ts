@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, input, output, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { PORTFOLIO_LAYOUT_DEFAULTS, PORTFOLIO_LAYOUT_LABELS } from '@portfolio/shared/config';
 import { ThemeToggle } from './theme-toggle';
 
 @Component({
@@ -14,7 +15,7 @@ import { ThemeToggle } from './theme-toggle';
       (keydown.escape)="onEsc()"
       #panel
       role="dialog"
-      aria-label="Navigation"
+      [attr.aria-label]="navigationDialogLabel"
       aria-modal="true"
     >
       <div class="inner">
@@ -22,7 +23,7 @@ import { ThemeToggle } from './theme-toggle';
           <button
             class="close-btn"
             type="button"
-            aria-label="Close navigation"
+            [attr.aria-label]="closeNavigationLabel"
             (click)="closeSidenav.emit()"
           >
             <span class="material-symbols-outlined" aria-hidden="true">close</span>
@@ -39,7 +40,7 @@ import { ThemeToggle } from './theme-toggle';
 
         @if (themeToggle()) {
           <div class="theme-row">
-            <span class="theme-label">Theme</span>
+            <span class="theme-label">{{ themeLabel }}</span>
             <lib-portfolio-theme-toggle />
           </div>
         }
@@ -146,9 +147,12 @@ import { ThemeToggle } from './theme-toggle';
 })
 export class SideNav implements AfterViewInit {
   open = input<boolean>(false);
-  links = input<Array<{ name: string; link: string }>>();
+  links = input<Array<{ name: string; link: string }>>(PORTFOLIO_LAYOUT_DEFAULTS.links);
   themeToggle = input(true);
   closeSidenav = output<void>();
+  protected readonly closeNavigationLabel = PORTFOLIO_LAYOUT_LABELS.closeNavigation;
+  protected readonly navigationDialogLabel = PORTFOLIO_LAYOUT_LABELS.navigationDialogLabel;
+  protected readonly themeLabel = PORTFOLIO_LAYOUT_LABELS.themeLabel;
 
   panelRef = viewChild<ElementRef<HTMLElement>>('panel');
 

@@ -1,4 +1,5 @@
 import { Component, OnInit, output } from '@angular/core';
+import { PORTFOLIO_LAYOUT_LABELS } from '@portfolio/shared/config';
 
 @Component({
   selector: 'lib-portfolio-theme-toggle',
@@ -7,8 +8,8 @@ import { Component, OnInit, output } from '@angular/core';
     <button
       class="theme-toggle"
       (click)="toggleTheme()"
-      [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
-      title="{{ isDarkMode ? 'Light mode' : 'Dark mode' }}"
+      [attr.aria-label]="isDarkMode ? switchToLightModeLabel : switchToDarkModeLabel"
+      [attr.title]="isDarkMode ? lightModeTitle : darkModeTitle"
     >
       <span class="icon">
         {{ isDarkMode ? '☀️' : '🌙' }}
@@ -62,6 +63,10 @@ export class ThemeToggle implements OnInit {
   isDarkMode = false;
   private readonly THEME_KEY = 'theme';
   themeChange = output<'dark' | 'light'>();
+  protected readonly switchToLightModeLabel = PORTFOLIO_LAYOUT_LABELS.switchToLightMode;
+  protected readonly switchToDarkModeLabel = PORTFOLIO_LAYOUT_LABELS.switchToDarkMode;
+  protected readonly lightModeTitle = PORTFOLIO_LAYOUT_LABELS.lightModeTitle;
+  protected readonly darkModeTitle = PORTFOLIO_LAYOUT_LABELS.darkModeTitle;
 
   ngOnInit() {
     this.initializeTheme();

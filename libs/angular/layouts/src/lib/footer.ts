@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import { PORTFOLIO_LAYOUT_DEFAULTS } from '@portfolio/shared/config';
 
 @Component({
   selector: 'lib-portfolio-footer',
@@ -75,10 +76,10 @@ import { Component, input } from '@angular/core';
   ],
 })
 export class Footer {
-  title = input<string>('');
-  emailHref = input<string>('mailto:you@example.com');
-  linkedinHref = input<string>('https://linkedin.com/in/your-handle');
-  githubHref = input<string>('https://github.com/your-handle');
+  title = input<string>(PORTFOLIO_LAYOUT_DEFAULTS.brandLabel);
+  emailHref = input<string>(PORTFOLIO_LAYOUT_DEFAULTS.emailHref);
+  linkedinHref = input<string>(PORTFOLIO_LAYOUT_DEFAULTS.linkedinHref);
+  githubHref = input<string>(PORTFOLIO_LAYOUT_DEFAULTS.githubHref);
 
   year = new Date().getFullYear();
 }

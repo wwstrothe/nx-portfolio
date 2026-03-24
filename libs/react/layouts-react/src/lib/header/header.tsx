@@ -1,3 +1,4 @@
+import { PORTFOLIO_LAYOUT_DEFAULTS, PORTFOLIO_LAYOUT_LABELS } from '@portfolio/shared/config';
 import { Link, NavLink } from 'react-router-dom';
 
 import { ThemeToggle } from '../theme-toggle/theme-toggle';
@@ -9,14 +10,11 @@ export type HeaderProps = {
   links?: Array<{ name: string; link: string }>;
 };
 
-const DEFAULT_LINKS = [
-  { name: 'Projects', link: '/projects' },
-  { name: 'Resume', link: '/resume' },
-];
+const DEFAULT_LINKS = PORTFOLIO_LAYOUT_DEFAULTS.links;
 
 export function Header({
   onMenuOpen,
-  brandLabel = 'William Strothe',
+  brandLabel = PORTFOLIO_LAYOUT_DEFAULTS.brandLabel,
   links = DEFAULT_LINKS,
 }: HeaderProps) {
   return (
@@ -27,7 +25,7 @@ export function Header({
         </Link>
         <button
           className={styles.menuBtn}
-          aria-label="Open navigation"
+          aria-label={PORTFOLIO_LAYOUT_LABELS.openNavigation}
           type="button"
           onClick={onMenuOpen}
         >

@@ -1,3 +1,4 @@
+import { PORTFOLIO_LAYOUT_DEFAULTS, PORTFOLIO_LAYOUT_LABELS } from '@portfolio/shared/config';
 import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -10,10 +11,7 @@ export type SideNavProps = {
   links?: Array<{ name: string; link: string }>;
 };
 
-const DEFAULT_LINKS = [
-  { name: 'Projects', link: '/projects' },
-  { name: 'Resume', link: '/resume' },
-];
+const DEFAULT_LINKS = PORTFOLIO_LAYOUT_DEFAULTS.links;
 
 export function SideNav({ open = false, onClose, links = DEFAULT_LINKS }: SideNavProps) {
   const panelRef = useRef<HTMLElement | null>(null);
@@ -29,7 +27,7 @@ export function SideNav({ open = false, onClose, links = DEFAULT_LINKS }: SideNa
       className={`${styles.sidenav} ${open ? styles.open : ''}`}
       tabIndex={-1}
       role="dialog"
-      aria-label="Navigation"
+      aria-label={PORTFOLIO_LAYOUT_LABELS.navigationDialogLabel}
       aria-modal="true"
       ref={panelRef}
       onKeyDown={(event) => {
@@ -41,7 +39,7 @@ export function SideNav({ open = false, onClose, links = DEFAULT_LINKS }: SideNa
           <button
             className={styles.closeBtn}
             type="button"
-            aria-label="Close navigation"
+            aria-label={PORTFOLIO_LAYOUT_LABELS.closeNavigation}
             onClick={onClose}
           >
             <span className="material-symbols-outlined" aria-hidden="true">
@@ -66,7 +64,7 @@ export function SideNav({ open = false, onClose, links = DEFAULT_LINKS }: SideNa
         </div>
 
         <div className={styles.themeRow}>
-          <span className={styles.themeLabel}>Theme</span>
+          <span className={styles.themeLabel}>{PORTFOLIO_LAYOUT_LABELS.themeLabel}</span>
           <ThemeToggle />
         </div>
       </div>

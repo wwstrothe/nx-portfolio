@@ -1,5 +1,9 @@
 import { Footer, Header, SideNav } from '@portfolio/shared/react/layouts-react';
-import { PORTFOLIO_NAV_ROUTES, PORTFOLIO_ROUTE_FULL_PATHS } from '@portfolio/shared/config';
+import {
+  PORTFOLIO_LAYOUT_DEFAULTS,
+  PORTFOLIO_NAV_ROUTES,
+  PORTFOLIO_ROUTE_FULL_PATHS,
+} from '@portfolio/shared/config';
 import { useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { DatabaseProvider, useDatabase } from './data/database';
@@ -15,6 +19,12 @@ function AppContent() {
   const links =
     siteContent?.links ??
     PORTFOLIO_NAV_ROUTES.map(({ name, fullPath }) => ({ name, link: fullPath }));
+  const brandLabel = siteContent?.title ?? PORTFOLIO_LAYOUT_DEFAULTS.brandLabel;
+  const emailHref = siteContent?.contactEmail
+    ? `mailto:${siteContent.contactEmail}`
+    : PORTFOLIO_LAYOUT_DEFAULTS.emailHref;
+  const linkedinHref = siteContent?.socialLinks?.linkedin ?? PORTFOLIO_LAYOUT_DEFAULTS.linkedinHref;
+  const githubHref = siteContent?.socialLinks?.github ?? PORTFOLIO_LAYOUT_DEFAULTS.githubHref;
 
   const handleMenuOpen = () => {
     setIsNavOpen(true);
@@ -26,11 +36,7 @@ function AppContent() {
 
   return (
     <div className={styles.app}>
-      <Header
-        onMenuOpen={handleMenuOpen}
-        brandLabel={siteContent?.title ?? 'William Strothe'}
-        links={links}
-      />
+      <Header onMenuOpen={handleMenuOpen} brandLabel={brandLabel} links={links} />
       <main className={styles.main}>
         <Routes>
           <Route path={PORTFOLIO_ROUTE_FULL_PATHS.home} element={<Home />} />
@@ -57,11 +63,10 @@ function AppContent() {
         </>
       )}
       <Footer
-        emailHref={`mailto:${siteContent?.contactEmail ?? 'william.strothe@gmail.com'}`}
-        linkedinHref={
-          siteContent?.socialLinks?.linkedin ?? 'https://linkedin.com/in/william-strothe'
-        }
-        githubHref={siteContent?.socialLinks?.github ?? 'https://github.com/wwstrothe'}
+        title={brandLabel}
+        emailHref={emailHref}
+        linkedinHref={linkedinHref}
+        githubHref={githubHref}
       />
     </div>
   );
