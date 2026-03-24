@@ -59,9 +59,9 @@ jobs:
         run: pnpm exec nx build portfolio --configuration=production
 
       # Heavy checks (only on push to main/beta)
-      - name: Install Playwright (Chromium only)
+      - name: Install Playwright browsers
         if: ${{ github.event_name == 'push' }}
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps
 
       - name: E2E
         if: ${{ github.event_name == 'push' }}
