@@ -6,9 +6,19 @@ import styles from './header.module.scss';
 export type HeaderProps = {
   onMenuOpen?: () => void;
   brandLabel?: string;
+  links?: Array<{ name: string; link: string }>;
 };
 
-export function Header({ onMenuOpen, brandLabel = 'William Strothe' }: HeaderProps) {
+const DEFAULT_LINKS = [
+  { name: 'Projects', link: '/projects' },
+  { name: 'Resume', link: '/resume' },
+];
+
+export function Header({
+  onMenuOpen,
+  brandLabel = 'William Strothe',
+  links = DEFAULT_LINKS,
+}: HeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
@@ -27,22 +37,17 @@ export function Header({ onMenuOpen, brandLabel = 'William Strothe' }: HeaderPro
         </button>
 
         <nav className={styles.nav}>
-          <NavLink
-            to="/projects"
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.active : ''}`.trim()
-            }
-          >
-            Projects
-          </NavLink>
-          <NavLink
-            to="/resume"
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.active : ''}`.trim()
-            }
-          >
-            Resume
-          </NavLink>
+          {links.map((link) => (
+            <NavLink
+              key={link.link}
+              to={link.link}
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.active : ''}`.trim()
+              }
+            >
+              {link.name}
+            </NavLink>
+          ))}
           <ThemeToggle />
         </nav>
       </div>

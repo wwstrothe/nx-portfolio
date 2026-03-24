@@ -1,3 +1,5 @@
+import { PORTFOLIO_NAV_ROUTES } from './portfolio-routes';
+
 export interface SiteContent extends Record<string, unknown> {
   title: string;
   header: string;
@@ -78,10 +80,7 @@ export const SITE_CONTENT: SiteContent = {
   aboutMe:
     'Senior TypeScript engineer with strong ownership of production web platforms, specializing in scalable front-end architecture, state management, and reliability. At Rocket Mortgage Capital Markets, I lead modernization efforts (Angular upgrades, Signals adoption, zoneless change detection), improve developer workflows through shared patterns and documentation, and mentor engineers through code reviews and architecture guidance. I also bring hands-on full-stack project experience (React, Node/Express, REST APIs, Nx monorepos, SQL/NoSQL) and am continuing to deepen backend/DevOps foundations through the MIT xPro Full Stack program (GraphQL, Docker, AWS CI/CD, security, automated testing).',
   profilePicture: '/images/profile-picture.jpg',
-  links: [
-    { name: 'Projects', link: '/projects' },
-    { name: 'Resume', link: '/resume' },
-  ],
+  links: PORTFOLIO_NAV_ROUTES.map(({ name, fullPath }) => ({ name, link: fullPath })),
   contactEmail: 'william.strothe@gmail.com',
   socialLinks: {
     linkedin: 'https://linkedin.com/in/william-strothe',

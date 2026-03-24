@@ -7,9 +7,15 @@ import styles from './side-nav.module.scss';
 export type SideNavProps = {
   open?: boolean;
   onClose?: () => void;
+  links?: Array<{ name: string; link: string }>;
 };
 
-export function SideNav({ open = false, onClose }: SideNavProps) {
+const DEFAULT_LINKS = [
+  { name: 'Projects', link: '/projects' },
+  { name: 'Resume', link: '/resume' },
+];
+
+export function SideNav({ open = false, onClose, links = DEFAULT_LINKS }: SideNavProps) {
   const panelRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -44,20 +50,18 @@ export function SideNav({ open = false, onClose }: SideNavProps) {
           </button>
 
           <nav className={styles.links}>
-            <NavLink
-              to="/projects"
-              className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`.trim()}
-              onClick={onClose}
-            >
-              Projects
-            </NavLink>
-            <NavLink
-              to="/resume"
-              className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`.trim()}
-              onClick={onClose}
-            >
-              Resume
-            </NavLink>
+            {links.map((link) => (
+              <NavLink
+                key={link.link}
+                to={link.link}
+                className={({ isActive }) =>
+                  `${styles.link} ${isActive ? styles.active : ''}`.trim()
+                }
+                onClick={onClose}
+              >
+                {link.name}
+              </NavLink>
+            ))}
           </nav>
         </div>
 
