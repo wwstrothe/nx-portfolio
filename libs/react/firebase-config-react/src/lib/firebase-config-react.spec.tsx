@@ -1,3 +1,16 @@
+jest.mock('@portfolio/shared/firebase-core', () => ({
+  getFirestoreClient: jest.fn(() => ({})),
+}));
+
+jest.mock('@portfolio/shared/firestore', () => ({
+  getAdapter: jest.fn(() => ({ id: 'mock-adapter' })),
+  getEnvironmentOptions: jest.fn((projectKey, target) => ({
+    projectKey,
+    environment: target,
+  })),
+  createWebFirestoreAdapter: jest.fn(() => ({ id: 'mock-adapter' })),
+}));
+
 import { getAdapter, getEnvironmentOptions } from './firebase-config-react';
 
 describe('Firebase Config React', () => {
