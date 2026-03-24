@@ -6,15 +6,11 @@ import type { QueryConstraint } from 'firebase/firestore';
 import { defer, from, type Observable } from 'rxjs';
 
 import {
-  addByPath,
   CollectionPath,
-  deleteByPath,
+  createTargetCrudTools,
   DocPath,
-  getByPath,
-  listByCollection,
-  setByPath,
   SetOptions,
-  updateByPath,
+  sortDocsByKeys,
   WithId,
   type BatchOp,
 } from '@portfolio/shared/firestore';
@@ -37,6 +33,10 @@ export type FirestoreCollectionToolsOptions<T extends Record<string, unknown>> =
 })
 export class FirestoreService {
   private readonly configService = inject(FirebaseConfigService);
+  private readonly targetCrud = createTargetCrudTools((projectKey, target) => {
+    const options = this.configService.getEnvironmentOptions(projectKey, target);
+    return this.configService.getAdapter(options);
+  });
 
   /**
    * Convert a collection listener to a Signal.
@@ -46,44 +46,27 @@ export class FirestoreService {
     projectKey: FirebaseProjectKey,
     target: Targets,
     collectionPath: CollectionPath,
-    constraints?: QueryConstraint[]
+    constraints?: QueryConstraint[],
   ): Signal<Array<WithId<T>>> {
-    return toSignal(
-      this.listenCollection$<T>(
-        projectKey,
-        target,
-        collectionPath,
-        constraints
-      ),
-      { initialValue: [] as Array<WithId<T>> }
-    );
+    return toSignal(this.listenCollection$<T>(projectKey, target, collectionPath, constraints), {
+      initialValue: [] as Array<WithId<T>>,
+    });
   }
 
   async getByPath<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
-    docPath: DocPath
+    docPath: DocPath,
   ): Promise<WithId<T> | null> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return getByPath<T>(this.configService.getAdapter(options), docPath);
+    return this.targetCrud.getByPath<T>(projectKey, target, docPath);
   }
 
   async listCollection<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
-    collectionPath: CollectionPath
+    collectionPath: CollectionPath,
   ): Promise<Array<WithId<T>>> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return listByCollection<T>(
-      this.configService.getAdapter(options),
-      collectionPath
-    );
+    return this.targetCrud.listCollection<T>(projectKey, target, collectionPath);
   }
 
   async setByPath<T extends Record<string, unknown>>(
@@ -91,99 +74,60 @@ export class FirestoreService {
     target: Targets,
     docPath: DocPath,
     data: T,
-    setOptions?: SetOptions
+    setOptions?: SetOptions,
   ): Promise<void> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    const adapter = this.configService.getAdapter(options);
-    return setByPath<T>(adapter, docPath, data, setOptions);
+    return this.targetCrud.setByPath(projectKey, target, docPath, data, setOptions);
   }
 
   async addByPath<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
     collectionPath: CollectionPath,
-    data: T
+    data: T,
   ): Promise<string> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return addByPath<T>(
-      this.configService.getAdapter(options),
-      collectionPath,
-      data
-    );
+    return this.targetCrud.addByPath<T>(projectKey, target, collectionPath, data);
   }
 
   async updateByPath<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
     docPath: DocPath,
-    data: Partial<T>
+    data: Partial<T>,
   ): Promise<void> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return updateByPath<T>(
-      this.configService.getAdapter(options),
-      docPath,
-      data
-    );
+    return this.targetCrud.updateByPath<T>(projectKey, target, docPath, data);
   }
 
   async deleteByPath(
     projectKey: FirebaseProjectKey,
     target: Targets,
-    docPath: DocPath
+    docPath: DocPath,
   ): Promise<void> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return deleteByPath(this.configService.getAdapter(options), docPath);
+    return this.targetCrud.deleteByPath(projectKey, target, docPath);
   }
 
   async commitBatch(
     projectKey: FirebaseProjectKey,
     target: Targets,
-    ops: BatchOp[]
+    ops: BatchOp[],
   ): Promise<void> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return this.configService.getAdapter(options).commitBatch(ops);
+    return this.targetCrud.commitBatch(projectKey, target, ops);
   }
 
   listenDoc$<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
-    docPath: DocPath
+    docPath: DocPath,
   ): Observable<WithId<T> | null> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return this.configService.getAdapter(options).listenDoc$<T>(docPath);
+    return this.targetCrud.listenDoc$<T>(projectKey, target, docPath);
   }
 
   listenCollection$<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
     collectionPath: CollectionPath,
-    constraints?: QueryConstraint[]
+    constraints?: QueryConstraint[],
   ): Observable<Array<WithId<T>>> {
-    const options = this.configService.getEnvironmentOptions(
-      projectKey,
-      target
-    );
-    return this.configService
-      .getAdapter(options)
-      .listenCollection$<T>(collectionPath, constraints);
+    return this.targetCrud.listenCollection$<T>(projectKey, target, collectionPath, constraints);
   }
 
   setByPath$<T extends Record<string, unknown>>(
@@ -191,70 +135,43 @@ export class FirestoreService {
     target: Targets,
     docPath: DocPath,
     data: T,
-    setOptions?: SetOptions
+    setOptions?: SetOptions,
   ): Observable<void> {
-    return defer(() =>
-      from(this.setByPath(projectKey, target, docPath, data, setOptions))
-    );
+    return defer(() => from(this.setByPath(projectKey, target, docPath, data, setOptions)));
   }
 
   addByPath$<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
     collectionPath: CollectionPath,
-    data: T
+    data: T,
   ): Observable<string> {
-    return defer(() =>
-      from(this.addByPath(projectKey, target, collectionPath, data))
-    );
+    return defer(() => from(this.addByPath(projectKey, target, collectionPath, data)));
   }
 
   updateByPath$<T extends Record<string, unknown>>(
     projectKey: FirebaseProjectKey,
     target: Targets,
     docPath: DocPath,
-    data: Partial<T>
+    data: Partial<T>,
   ): Observable<void> {
-    return defer(() =>
-      from(this.updateByPath(projectKey, target, docPath, data))
-    );
+    return defer(() => from(this.updateByPath(projectKey, target, docPath, data)));
   }
 
   deleteByPath$(
     projectKey: FirebaseProjectKey,
     target: Targets,
-    docPath: DocPath
+    docPath: DocPath,
   ): Observable<void> {
     return defer(() => from(this.deleteByPath(projectKey, target, docPath)));
   }
 
-  commitBatch$(
-    projectKey: FirebaseProjectKey,
-    target: Targets,
-    ops: BatchOp[]
-  ): Observable<void> {
+  commitBatch$(projectKey: FirebaseProjectKey, target: Targets, ops: BatchOp[]): Observable<void> {
     return defer(() => from(this.commitBatch(projectKey, target, ops)));
   }
 
   sortDocs<T>(docs: T[], sortBy: keyof T | Array<keyof T>): T[] {
-    const keys = Array.isArray(sortBy) ? sortBy : [sortBy];
-
-    return [...docs].sort((a, b) => {
-      for (const key of keys) {
-        const aVal = a[key];
-        const bVal = b[key];
-
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-          const diff = bVal - aVal;
-          if (diff !== 0) return diff;
-          continue;
-        }
-
-        const cmp = String(bVal ?? '').localeCompare(String(aVal ?? ''));
-        if (cmp !== 0) return cmp;
-      }
-      return 0;
-    });
+    return sortDocsByKeys(docs, sortBy);
   }
 
   /**
@@ -265,25 +182,15 @@ export class FirestoreService {
     projectKey: FirebaseProjectKey,
     target: Targets,
     collectionPath: CollectionPath,
-    constraints?: QueryConstraint[]
+    constraints?: QueryConstraint[],
   ): {
     prod: Signal<Array<WithId<T>>>;
     emulator: Signal<Array<WithId<T>>> | null;
   } {
-    const prod = this.listenCollectionAsSignal<T>(
-      projectKey,
-      'live',
-      collectionPath,
-      constraints
-    );
+    const prod = this.listenCollectionAsSignal<T>(projectKey, 'live', collectionPath, constraints);
 
     const emulator = target
-      ? this.listenCollectionAsSignal<T>(
-          projectKey,
-          'emulator',
-          collectionPath,
-          constraints
-        )
+      ? this.listenCollectionAsSignal<T>(projectKey, 'emulator', collectionPath, constraints)
       : null;
 
     return { prod, emulator };
