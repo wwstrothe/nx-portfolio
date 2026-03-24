@@ -1,8 +1,12 @@
-import { RESUME } from '../../data/resume';
+import { useDatabase } from '../../data/database';
 import styles from './resume.module.scss';
 
 export function Resume() {
-  const resume = RESUME;
+  const { resume } = useDatabase();
+
+  if (!resume) {
+    return null;
+  }
 
   return (
     <div className={styles.resumeContainer}>
@@ -41,7 +45,7 @@ export function Resume() {
 
       <section className={styles.resumeSection}>
         <h2 className={styles.sectionTitle}>Professional Experience</h2>
-        {resume.proffesionalExperience.map((exp) => (
+        {resume.professionalExperience.map((exp) => (
           <div className={styles.experienceEntry} key={`${exp.company}-${exp.role}`}>
             <div className={styles.experienceHeader}>
               <h3 className={styles.position}>

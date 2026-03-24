@@ -1,4 +1,6 @@
 import type { FirebaseProjectKey } from '@portfolio/shared/config';
+import type { QueryConstraint } from 'firebase/firestore';
+import type { Observable } from 'rxjs';
 
 import {
   CollectionPath,
@@ -16,7 +18,7 @@ import {
   type Targets,
 } from '@portfolio/shared/react/firebase-config-react';
 
-const targetCrud = createTargetCrudTools((projectKey, target) => {
+const targetCrud = createTargetCrudTools((projectKey: FirebaseProjectKey, target: Targets) => {
   const options = getEnvironmentOptions(projectKey, target);
   return getAdapter(options);
 });
@@ -106,6 +108,23 @@ export async function firestoreCommitBatch(
   ops: BatchOp[],
 ): Promise<void> {
   return targetCrud.commitBatch(projectKey, target, ops);
+}
+
+export function firestoreListenDoc<T extends Record<string, unknown>>(
+  projectKey: FirebaseProjectKey,
+  target: Targets,
+  docPath: DocPath,
+): Observable<WithId<T> | null> {
+  return targetCrud.listenDoc$<T>(projectKey, target, docPath);
+}
+
+export function firestoreListenCollection<T extends Record<string, unknown>>(
+  projectKey: FirebaseProjectKey,
+  target: Targets,
+  collectionPath: CollectionPath,
+  constraints?: QueryConstraint[],
+): Observable<Array<WithId<T>>> {
+  return targetCrud.listenCollection$<T>(projectKey, target, collectionPath, constraints);
 }
 
 /**

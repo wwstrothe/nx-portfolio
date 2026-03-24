@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { PROJECTS } from '../../data/projects';
+import { useDatabase } from '../../data/database';
 import styles from './projects.module.scss';
 
 const titleCase = (str: string) => {
@@ -17,7 +17,7 @@ const getStatusClassName = (status: string) => {
 
 export function Projects() {
   const navigate = useNavigate();
-  const projects = PROJECTS;
+  const { projects } = useDatabase();
 
   const navigateToProject = (slug: string) => {
     navigate(`/project/${slug}`);
@@ -34,7 +34,7 @@ export function Projects() {
     <div>
       <h1 className={styles.sectionTitle}>Projects</h1>
       <div className={styles.projects}>
-        {projects.map((project) => (
+        {(projects ?? []).map((project) => (
           <div
             key={project.id}
             className={styles.projectCard}
