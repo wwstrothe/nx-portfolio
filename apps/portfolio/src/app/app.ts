@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { PORTFOLIO_LAYOUT_DEFAULTS } from '@portfolio/shared/config';
+import { PORTFOLIO_LAYOUT_DEFAULTS, PORTFOLIO_NAV_ROUTES } from '@portfolio/shared/config';
 import { Footer, Header, SideNav } from '@portfolio/shared/angular/layouts';
 import { Database, SiteContent } from './data/database';
 
@@ -66,9 +66,18 @@ export class App {
   database = inject(Database);
   siteContent = this.database.siteContent as () => SiteContent | null;
   title = computed(() => this.siteContent()?.title ?? PORTFOLIO_LAYOUT_DEFAULTS.brandLabel);
-  links = computed<Array<{ name: string; link: string }>>(
-    () => this.siteContent()?.links ?? PORTFOLIO_LAYOUT_DEFAULTS.links,
-  );
+  links = computed<Array<{ name: string; link: string }>>(() => {
+    const links = this.siteContent()?.links ?? PORTFOLIO_LAYOUT_DEFAULTS.links;
+    const linksByPath = new Map(links.map((link) => [link.link, link]));
+
+    for (const route of PORTFOLIO_NAV_ROUTES) {
+      if (!linksByPath.has(route.fullPath)) {
+        linksByPath.set(route.fullPath, { name: route.name, link: route.fullPath });
+      }
+    }
+
+    return [...linksByPath.values()];
+  });
 
   onMenuOpen() {
     this.isNavOpen = true;

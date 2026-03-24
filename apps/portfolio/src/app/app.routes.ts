@@ -18,5 +18,9 @@ export const appRoutes: Route[] = [
     path: PORTFOLIO_ROUTE_PATHS.resume,
     loadComponent: () => import('./pages/resume/resume'),
   },
+  {
+    path: PORTFOLIO_ROUTE_PATHS.contact,
+    loadComponent: () => import('./pages/contact/contact'),
+  },
   { path: PORTFOLIO_ROUTE_PATHS.wildcard, redirectTo: PORTFOLIO_ROUTE_PATHS.home },
 ];
