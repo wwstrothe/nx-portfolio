@@ -1,0 +1,91 @@
+name: Deploy firebase-sync (Cloud Run)
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-firebase-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SERVICE_NAME: firebase-sync
+  REGION: us-central1
+  GAR_REPOSITORY: cloud-run
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.8.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build firebase-sync
+        run: pnpm exec nx build firebase-sync --configuration=production
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker auth for Artifact Registry
+        run: gcloud auth configure-docker "${{ env.REGION }}-docker.pkg.dev" --quiet
+
+      - name: Ensure Artifact Registry exists
+        run: |
+          gcloud artifacts repositories describe "${{ env.GAR_REPOSITORY }}" \
+            --location="${{ env.REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+          || gcloud artifacts repositories create "${{ env.GAR_REPOSITORY }}" \
+            --repository-format=docker \
+            --location="${{ env.REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}"
+
+      - name: Build and push image with Cloud Build
+        env:
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        run: |
+          gcloud builds submit \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --tag "$IMAGE_URI" \
+            --file apps/firebase-sync/Dockerfile \
+            .
+
+      - name: Deploy to Cloud Run
+        env:
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        run: |
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --image "$IMAGE_URI" \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --min-instances=0 \
+            --max-instances=2 \
+            --port=8080 \
+            --set-env-vars=NODE_ENV=production
