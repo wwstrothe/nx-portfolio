@@ -71,7 +71,13 @@ jobs:
           echo "Provider configured in workflow: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}"
 
           AUDIENCE="https://iam.googleapis.com/${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}"
-          TOKEN_RESPONSE="$(curl -sS -H \"Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN\" \"${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}\")"
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+            echo "Missing GitHub OIDC request environment variables."
+            exit 1
+          fi
+
+          OIDC_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
+          TOKEN_RESPONSE="$(curl -sS -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${OIDC_URL}")"
           ID_TOKEN="$(echo "$TOKEN_RESPONSE" | jq -r '.value')"
 
           if [ -z "$ID_TOKEN" ] || [ "$ID_TOKEN" = "null" ]; then
