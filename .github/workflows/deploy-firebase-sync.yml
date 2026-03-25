@@ -84,8 +84,8 @@ jobs:
         run: |
           gcloud builds submit \
             --project="${{ env.GCP_PROJECT_ID }}" \
-            --tag "$IMAGE_URI" \
-            --file apps/firebase-sync/Dockerfile \
+            --config=cloudbuild.yaml \
+            --substitutions="_IMAGE_URI=$IMAGE_URI" \
             .
 
       - name: Deploy to Cloud Run
