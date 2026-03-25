@@ -1,0 +1,39 @@
+@use 'variables' as tokens;
+
+.g2048-lb {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: tokens.$spacing-2xl tokens.$spacing-md;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-lg;
+    margin-bottom: tokens.$spacing-2xl;
+
+    h1 {
+      font-size: tokens.$font-size-2xl;
+      font-weight: tokens.$font-weight-bold;
+      margin: 0;
+    }
+  }
+
+  &__back {
+    font-size: tokens.$font-size-sm;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color tokens.$transition-fast;
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  &__content {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: tokens.$border-radius-lg;
+    padding: tokens.$spacing-lg;
+  }
+}

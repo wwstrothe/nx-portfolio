@@ -1,0 +1,374 @@
+@use 'variables' as tokens;
+
+@keyframes tile-appear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tile-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.g2048 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: tokens.$spacing-lg tokens.$spacing-md;
+  gap: tokens.$spacing-md;
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 520px;
+
+    h1 {
+      font-size: tokens.$font-size-2xl;
+      font-weight: tokens.$font-weight-bold;
+      margin: 0;
+    }
+  }
+
+  &__scores {
+    display: flex;
+    gap: tokens.$spacing-md;
+  }
+
+  &__score-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  &__score-label {
+    font-size: tokens.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
+  &__score-value {
+    font-size: tokens.$font-size-2xl;
+    font-weight: tokens.$font-weight-bold;
+    color: var(--color-primary);
+    font-variant-numeric: tabular-nums; /* cspell:disable-line */
+    min-width: 2ch;
+    text-align: right;
+  }
+
+  // ── Board ────────────────────────────────────────────────────────────────────
+
+  &__arena {
+    --gap: #{tokens.$spacing-sm};
+    position: relative;
+    width: min(520px, 95vw);
+    aspect-ratio: 1;
+    background: #bbada0;
+    border-radius: tokens.$border-radius-lg;
+    box-shadow: tokens.$shadow-xl;
+    overflow: hidden;
+  }
+
+  &__grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n, 4), 1fr);
+    gap: var(--gap);
+    padding: var(--gap);
+  }
+
+  &__cell {
+    background: rgba(238, 228, 218, 0.35);
+    border-radius: tokens.$border-radius-md;
+  }
+
+  &__tile {
+    --r: 0;
+    --c: 0;
+    position: absolute;
+    // step = (100% - gap) / n  →  cell = step - gap
+    width: calc((100% - var(--gap)) / var(--n, 4) - var(--gap));
+    height: calc((100% - var(--gap)) / var(--n, 4) - var(--gap));
+    // top = gap + r * step = gap + r * (100% - gap) / n
+    top: calc(var(--gap) + var(--r) * (100% - var(--gap)) / var(--n, 4));
+    left: calc(var(--gap) + var(--c) * (100% - var(--gap)) / var(--n, 4));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: tokens.$border-radius-md;
+    font-weight: tokens.$font-weight-bold;
+    font-size: tokens.$font-size-xl;
+    background: #cdc1b4;
+    color: #776e65;
+    box-shadow: tokens.$shadow-md;
+
+    &--new {
+      animation: tile-appear 150ms ease-out both;
+    }
+
+    &--merged {
+      animation: tile-pop 200ms ease-out both;
+    }
+
+    &--sm-text {
+      font-size: tokens.$font-size-lg;
+    }
+
+    &--xs-text {
+      font-size: tokens.$font-size-md;
+    }
+  }
+
+  // ── Overlay ──────────────────────────────────────────────────────────────────
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: tokens.$spacing-md;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+    padding: tokens.$spacing-lg;
+    overflow-y: auto;
+    border-radius: tokens.$border-radius-lg;
+
+    h2 {
+      font-size: tokens.$font-size-3xl;
+      font-weight: tokens.$font-weight-bold;
+      color: tokens.$color-white;
+      margin: 0;
+    }
+
+    p {
+      font-size: tokens.$font-size-md;
+      color: tokens.$color-gray-300;
+      margin: 0;
+    }
+  }
+
+  &__hint {
+    font-size: tokens.$font-size-sm;
+    color: tokens.$color-gray-400;
+  }
+
+  // ── Name entry ───────────────────────────────────────────────────────────────
+
+  &__name-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: tokens.$spacing-xs;
+  }
+
+  &__name-label {
+    font-size: tokens.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: tokens.$color-gray-400;
+  }
+
+  &__name-input {
+    width: 6rem;
+    text-align: center;
+    font-family: tokens.$font-family-mono;
+    font-size: tokens.$font-size-2xl;
+    font-weight: tokens.$font-weight-bold;
+    letter-spacing: 0.3em;
+    padding: tokens.$spacing-sm;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid tokens.$color-gray-500;
+    border-radius: tokens.$border-radius-md;
+    color: tokens.$color-white;
+    outline: none;
+    transition: border-color tokens.$transition-fast;
+
+    &::placeholder {
+      color: tokens.$color-gray-600;
+    }
+
+    &:focus {
+      border-color: var(--color-primary);
+    }
+  }
+
+  &__save-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: tokens.$spacing-sm;
+  }
+
+  &__saving {
+    font-size: tokens.$font-size-sm;
+    color: tokens.$color-gray-400;
+    font-style: italic;
+  }
+
+  &__saved {
+    font-size: tokens.$font-size-sm;
+    font-weight: tokens.$font-weight-semibold;
+    color: tokens.$color-success;
+  }
+
+  // ── Settings ─────────────────────────────────────────────────────────────────
+
+  &__settings {
+    display: flex;
+    flex-direction: column;
+    gap: tokens.$spacing-sm;
+    width: 100%;
+    max-width: 260px;
+  }
+
+  &__setting-group {
+    display: flex;
+    align-items: center;
+    gap: tokens.$spacing-md;
+  }
+
+  &__setting-label {
+    font-size: tokens.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: tokens.$color-gray-400;
+    width: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  &__options {
+    display: flex;
+    gap: tokens.$spacing-xs;
+    flex: 1;
+  }
+
+  &__option {
+    flex: 1;
+    padding: tokens.$spacing-xs 0;
+    font-size: tokens.$font-size-xs;
+    font-weight: tokens.$font-weight-medium;
+    border-radius: tokens.$border-radius-sm;
+    border: 1px solid tokens.$color-gray-600;
+    background: transparent;
+    color: tokens.$color-gray-300;
+    cursor: pointer;
+    transition:
+      background-color tokens.$transition-fast,
+      border-color tokens.$transition-fast,
+      color tokens.$transition-fast;
+
+    &:hover:not(&--active) {
+      border-color: tokens.$color-gray-400;
+      color: tokens.$color-white;
+    }
+
+    &--active {
+      background-color: tokens.$color-primary;
+      border-color: tokens.$color-primary;
+      color: tokens.$color-white;
+    }
+  }
+
+  // ── Buttons ──────────────────────────────────────────────────────────────────
+
+  &__secondary-btn {
+    padding: tokens.$spacing-xs tokens.$spacing-lg;
+    font-size: tokens.$font-size-sm;
+    font-weight: tokens.$font-weight-medium;
+    border-radius: tokens.$border-radius-md;
+    border: 1px solid tokens.$color-gray-600;
+    background: transparent;
+    color: tokens.$color-gray-300;
+    cursor: pointer;
+    transition:
+      border-color tokens.$transition-fast,
+      color tokens.$transition-fast;
+
+    &:hover {
+      border-color: tokens.$color-gray-400;
+      color: tokens.$color-white;
+    }
+  }
+
+  &__start-btn {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    padding: tokens.$spacing-sm tokens.$spacing-xl;
+    font-size: tokens.$font-size-md;
+    font-weight: tokens.$font-weight-semibold;
+    border-radius: tokens.$border-radius-md;
+    border: none;
+    background-color: tokens.$color-primary;
+    color: tokens.$color-white;
+    cursor: pointer;
+    transition: background-color tokens.$transition-fast;
+
+    &:hover {
+      background-color: tokens.$color-primary-dark;
+      color: tokens.$color-white;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Score lines ───────────────────────────────────────────────────────────────
+
+  &__final-score {
+    font-size: tokens.$font-size-xl;
+    font-weight: tokens.$font-weight-semibold;
+    color: tokens.$color-white;
+  }
+
+  &__new-high-score {
+    font-size: tokens.$font-size-md;
+    font-weight: tokens.$font-weight-semibold;
+    color: tokens.$color-accent;
+  }
+
+  &__high-score {
+    font-size: tokens.$font-size-sm;
+    color: tokens.$color-gray-400;
+  }
+
+  // ── Footer ───────────────────────────────────────────────────────────────────
+
+  &__footer {
+    display: flex;
+    gap: tokens.$spacing-xl;
+    font-size: tokens.$font-size-xs;
+    color: var(--color-text-secondary);
+    align-items: center;
+  }
+
+  &__lb-link {
+    font-size: tokens.$font-size-xs;
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

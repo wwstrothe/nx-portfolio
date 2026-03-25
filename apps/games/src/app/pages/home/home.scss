@@ -1,0 +1,99 @@
+@use 'variables' as tokens;
+
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: tokens.$spacing-2xl tokens.$spacing-md;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: tokens.$spacing-lg;
+    width: 100%;
+    max-width: 900px;
+  }
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: tokens.$spacing-sm;
+  padding: tokens.$spacing-xl;
+  border: 1px solid var(--color-border);
+  border-radius: tokens.$border-radius-lg;
+  background: var(--color-bg-elevated);
+  transition:
+    box-shadow tokens.$transition-base,
+    border-color tokens.$transition-base;
+
+  &:hover {
+    box-shadow: tokens.$shadow-lg;
+    border-color: var(--color-primary);
+  }
+
+  &__icon {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  &__title {
+    font-size: tokens.$font-size-xl;
+    font-weight: tokens.$font-weight-semibold;
+    margin: 0;
+  }
+
+  &__description {
+    font-size: tokens.$font-size-sm;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__actions {
+    display: flex;
+    gap: tokens.$spacing-sm;
+    margin-top: tokens.$spacing-sm;
+    width: 100%;
+  }
+
+  &__play-btn {
+    flex: 1;
+    text-align: center;
+    padding: tokens.$spacing-sm tokens.$spacing-md;
+    font-size: tokens.$font-size-sm;
+    font-weight: tokens.$font-weight-semibold;
+    border-radius: tokens.$border-radius-md;
+    background-color: var(--color-primary);
+    color: tokens.$color-white;
+    text-decoration: none;
+    transition: background-color tokens.$transition-fast;
+
+    &:hover {
+      background-color: var(--color-primary-dark);
+      color: tokens.$color-white;
+    }
+  }
+
+  &__lb-btn {
+    flex: 1;
+    text-align: center;
+    padding: tokens.$spacing-sm tokens.$spacing-md;
+    font-size: tokens.$font-size-sm;
+    font-weight: tokens.$font-weight-medium;
+    border-radius: tokens.$border-radius-md;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition:
+      border-color tokens.$transition-fast,
+      color tokens.$transition-fast;
+
+    &:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+  }
+}

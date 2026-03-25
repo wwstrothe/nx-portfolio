@@ -1,0 +1,105 @@
+@use 'variables' as tokens;
+
+.lb-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: tokens.$spacing-xs;
+  margin-bottom: tokens.$spacing-md;
+}
+
+.lb-tab {
+  padding: tokens.$spacing-xs tokens.$spacing-md;
+  font-size: tokens.$font-size-sm;
+  font-weight: tokens.$font-weight-medium;
+  border: 1px solid var(--color-border);
+  border-radius: tokens.$border-radius-full;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color tokens.$transition-fast,
+    border-color tokens.$transition-fast,
+    color tokens.$transition-fast;
+
+  &:hover:not(&--active) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &--active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: tokens.$color-white;
+  }
+}
+
+.lb-empty {
+  text-align: center;
+  padding: tokens.$spacing-2xl;
+  color: var(--color-text-secondary);
+  font-size: tokens.$font-size-md;
+}
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: tokens.$font-size-sm;
+
+  th {
+    text-align: left;
+    padding: tokens.$spacing-sm tokens.$spacing-md;
+    font-size: tokens.$font-size-xs;
+    font-weight: tokens.$font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  td {
+    padding: tokens.$spacing-sm tokens.$spacing-md;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background-color: var(--color-bg-secondary);
+  }
+}
+
+.lb-row {
+  &--gold td:first-child { color: #f59e0b; font-weight: tokens.$font-weight-bold; }
+  &--silver td:first-child { color: tokens.$color-gray-400; font-weight: tokens.$font-weight-bold; }
+  &--bronze td:first-child { color: #b45309; font-weight: tokens.$font-weight-bold; }
+}
+
+.lb-rank {
+  font-weight: tokens.$font-weight-semibold;
+  width: 2.5rem;
+}
+
+.lb-name {
+  font-family: tokens.$font-family-mono;
+  font-weight: tokens.$font-weight-bold;
+  letter-spacing: 0.1em;
+}
+
+.lb-score {
+  font-weight: tokens.$font-weight-semibold;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums; /* cspell:disable-line */
+}
+
+.lb-extra {
+  text-transform: capitalize;
+  color: var(--color-text-secondary);
+}
+
+.lb-date {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
