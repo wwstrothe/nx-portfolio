@@ -65,10 +65,12 @@ jobs:
           fi
 
       - name: Authenticate to Google Cloud
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
