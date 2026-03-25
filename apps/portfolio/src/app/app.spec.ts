@@ -1,4 +1,5 @@
 import { Injector, runInInjectionContext } from '@angular/core';
+import { PORTFOLIO_ROUTE_FULL_PATHS } from '@portfolio/shared/config';
 import { App } from './app';
 import { Database, SiteContent } from './data/database';
 
@@ -9,8 +10,8 @@ describe('App class', () => {
     const fakeSite = {
       title: 'William Strothe',
       links: [
-        { name: 'Projects', link: '' },
-        { name: 'Resume', link: '' },
+        { name: 'Projects', link: PORTFOLIO_ROUTE_FULL_PATHS.projects },
+        { name: 'Resume', link: PORTFOLIO_ROUTE_FULL_PATHS.resume },
       ],
       contactEmail: '',
       socialLinks: { linkedin: '', github: '' },
@@ -28,9 +29,10 @@ describe('App class', () => {
 
   it('should have links configured', () => {
     const links = app.links();
-    expect(links?.length).toBe(2);
+    expect(links?.length).toBe(3);
     expect(links?.[0].name).toBe('Projects');
     expect(links?.[1].name).toBe('Resume');
+    expect(links?.[2]).toEqual({ name: 'Contact', link: PORTFOLIO_ROUTE_FULL_PATHS.contact });
   });
 
   it('should initialize isNavOpen as false', () => {

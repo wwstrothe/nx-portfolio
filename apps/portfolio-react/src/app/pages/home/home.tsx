@@ -1,10 +1,14 @@
 import React from 'react';
-import { SITE_CONTENT } from '../../data/content';
+import { useDatabase } from '../../data/database';
 import Projects from '../projects/projects';
 import styles from './home.module.scss';
 
 export function Home() {
-  const siteContent = SITE_CONTENT;
+  const { siteContent } = useDatabase();
+
+  if (!siteContent) {
+    return null;
+  }
 
   return (
     <div className={styles.homePage}>

@@ -1,0 +1,9 @@
+node_modules
+.pnpm-store
+.git
+.github
+.vscode
+dist
+coverage
+tmp
+emulator-data

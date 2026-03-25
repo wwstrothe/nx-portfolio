@@ -1,3 +1,4 @@
+import { PORTFOLIO_LAYOUT_DEFAULTS, PORTFOLIO_LAYOUT_LABELS } from '@portfolio/shared/config';
 import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -7,9 +8,12 @@ import styles from './side-nav.module.scss';
 export type SideNavProps = {
   open?: boolean;
   onClose?: () => void;
+  links?: Array<{ name: string; link: string }>;
 };
 
-export function SideNav({ open = false, onClose }: SideNavProps) {
+const DEFAULT_LINKS = PORTFOLIO_LAYOUT_DEFAULTS.links;
+
+export function SideNav({ open = false, onClose, links = DEFAULT_LINKS }: SideNavProps) {
   const panelRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -23,7 +27,7 @@ export function SideNav({ open = false, onClose }: SideNavProps) {
       className={`${styles.sidenav} ${open ? styles.open : ''}`}
       tabIndex={-1}
       role="dialog"
-      aria-label="Navigation"
+      aria-label={PORTFOLIO_LAYOUT_LABELS.navigationDialogLabel}
       aria-modal="true"
       ref={panelRef}
       onKeyDown={(event) => {
@@ -35,7 +39,7 @@ export function SideNav({ open = false, onClose }: SideNavProps) {
           <button
             className={styles.closeBtn}
             type="button"
-            aria-label="Close navigation"
+            aria-label={PORTFOLIO_LAYOUT_LABELS.closeNavigation}
             onClick={onClose}
           >
             <span className="material-symbols-outlined" aria-hidden="true">
@@ -44,25 +48,23 @@ export function SideNav({ open = false, onClose }: SideNavProps) {
           </button>
 
           <nav className={styles.links}>
-            <NavLink
-              to="/projects"
-              className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`.trim()}
-              onClick={onClose}
-            >
-              Projects
-            </NavLink>
-            <NavLink
-              to="/resume"
-              className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`.trim()}
-              onClick={onClose}
-            >
-              Resume
-            </NavLink>
+            {links.map((link) => (
+              <NavLink
+                key={link.link}
+                to={link.link}
+                className={({ isActive }) =>
+                  `${styles.link} ${isActive ? styles.active : ''}`.trim()
+                }
+                onClick={onClose}
+              >
+                {link.name}
+              </NavLink>
+            ))}
           </nav>
         </div>
 
         <div className={styles.themeRow}>
-          <span className={styles.themeLabel}>Theme</span>
+          <span className={styles.themeLabel}>{PORTFOLIO_LAYOUT_LABELS.themeLabel}</span>
           <ThemeToggle />
         </div>
       </div>

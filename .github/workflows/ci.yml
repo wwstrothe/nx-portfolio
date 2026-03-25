@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 'lts/*'
           cache: pnpm
 
       - name: Install deps
@@ -59,13 +59,13 @@ jobs:
         run: pnpm exec nx build portfolio --configuration=production
 
       # Heavy checks (only on push to main/beta)
-      - name: Install Playwright (Chromium only)
+      - name: Install Playwright browsers
         if: ${{ github.event_name == 'push' }}
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps
 
       - name: E2E
         if: ${{ github.event_name == 'push' }}
-        run: pnpm exec nx e2e portfolio-e2e
+        run: pnpm exec nx run-many -t e2e -p portfolio-e2e,portfolio-react-e2e
 
       - name: Nx fix-ci
         if: always()

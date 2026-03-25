@@ -1,22 +1,27 @@
+import { PORTFOLIO_LAYOUT_DEFAULTS } from '@portfolio/shared/config';
 import styles from './footer.module.scss';
 
 export type FooterProps = {
+  title?: string;
   emailHref?: string;
   linkedinHref?: string;
   githubHref?: string;
 };
 
 export function Footer({
-  emailHref = 'mailto:you@example.com',
-  linkedinHref = 'https://linkedin.com/in/your-handle',
-  githubHref = 'https://github.com/your-handle',
+  title = PORTFOLIO_LAYOUT_DEFAULTS.brandLabel,
+  emailHref = PORTFOLIO_LAYOUT_DEFAULTS.emailHref,
+  linkedinHref = PORTFOLIO_LAYOUT_DEFAULTS.linkedinHref,
+  githubHref = PORTFOLIO_LAYOUT_DEFAULTS.githubHref,
 }: FooterProps) {
   const year = new Date().getFullYear();
 
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
-        <span className={styles.copyright}>© {year} William Strothe</span>
+        <span className={styles.copyright}>
+          © {year} {title}
+        </span>
 
         <div className={styles.links}>
           <a href={emailHref}>Email</a>

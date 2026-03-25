@@ -1,84 +1,24 @@
 import { computed, DestroyRef, inject, Injectable, isDevMode, signal, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  PORTFOLIO_COLLECTION_PATH,
+  PORTFOLIO_PROJECT_KEY,
+  PROJECTS,
+  PROJECTS_DOC_ID,
+  RESUME,
+  RESUME_DOC_ID,
+  SITE_CONTENT,
+  SITE_CONTENT_DOC_ID,
+  type PortfolioData,
+  type Project,
+  type Resume,
+  type SiteContent,
+} from '@portfolio/shared/config';
 import { FirestoreService } from '@portfolio/shared/angular/firestore-angular';
-import { forkJoin } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
-import { SITE_CONTENT } from './content';
-import { PROJECTS } from './projects';
-import { RESUME } from './resume';
+import { forkJoin, of } from 'rxjs';
+import { catchError, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
-export interface SiteContent extends Record<string, unknown> {
-  title: string;
-  header: string;
-  subHeader: string;
-  aboutMe: string;
-  profilePicture: string;
-  links: Array<{ name: string; link: string }>;
-  contactEmail: string;
-  socialLinks: {
-    linkedin: string;
-    github: string;
-  };
-}
-
-export interface Project extends Record<string, unknown> {
-  id: string;
-  slug: string;
-  status: 'active' | 'archived' | 'wip';
-  title: string;
-  shortDescription: string;
-  description: string;
-  repoLink: string;
-  liveLink?: string;
-  tags: string[];
-  thumbnailUrl?: string;
-  galleryUrls?: string[];
-  videoUrl?: string;
-}
-
-export interface Resume extends Record<string, unknown> {
-  name: string;
-  subHeader: string;
-  location: string;
-  cellPhone: string;
-  email: string;
-  professionalSummary: string;
-  technicalSkills: Array<{
-    category: string;
-    skills: string[];
-  }>;
-  professionalExperience: Array<{
-    role: string;
-    department: string;
-    company: string;
-    location: string;
-    startDate: string;
-    endDate: string | 'Present';
-    bulletPoints: string[];
-  }>;
-  projects: Array<{
-    title: string;
-    technologies: string[];
-    bulletPoints: string[];
-  }>;
-  education: Array<{
-    institution: string;
-    fieldOfStudy: string;
-    completionDate: string;
-  }>;
-}
-
-export type PortfolioData = {
-  siteContent: SiteContent;
-  projects: Array<Project>;
-  resume: Resume;
-};
-
-const PROJECT_KEY = 'personal-project',
-  COLLECTION_PATH = 'portfolio',
-  SITE_CONTENT_DOC_ID = 'site-content',
-  PROJECTS_DOC_ID = 'projects',
-  RESUME_DOC_ID = 'resume';
+export type { SiteContent, Project, Resume, PortfolioData };
 
 @Injectable({
   providedIn: 'root',
@@ -111,7 +51,11 @@ export class Database {
     this.resumeStatus.set('loading');
 
     this.firestoreService
-      .listenCollection$<PortfolioData>(PROJECT_KEY, this.target, COLLECTION_PATH)
+      .listenCollection$<PortfolioData>(
+        PORTFOLIO_PROJECT_KEY,
+        this.target,
+        PORTFOLIO_COLLECTION_PATH,
+      )
       .pipe(
         map((docs) => {
           const site = docs.find((d) => d.id === SITE_CONTENT_DOC_ID) as unknown as
@@ -163,21 +107,21 @@ export class Database {
 
     forkJoin({
       site: this.firestoreService.setByPath$(
-        PROJECT_KEY,
+        PORTFOLIO_PROJECT_KEY,
         this.target,
-        `${COLLECTION_PATH}/${SITE_CONTENT_DOC_ID}`,
+        `${PORTFOLIO_COLLECTION_PATH}/${SITE_CONTENT_DOC_ID}`,
         SITE_CONTENT,
       ),
       projects: this.firestoreService.setByPath$(
-        PROJECT_KEY,
+        PORTFOLIO_PROJECT_KEY,
         this.target,
-        `${COLLECTION_PATH}/${PROJECTS_DOC_ID}`,
+        `${PORTFOLIO_COLLECTION_PATH}/${PROJECTS_DOC_ID}`,
         { items: PROJECTS },
       ),
       resume: this.firestoreService.setByPath$(
-        PROJECT_KEY,
+        PORTFOLIO_PROJECT_KEY,
         this.target,
-        `${COLLECTION_PATH}/${RESUME_DOC_ID}`,
+        `${PORTFOLIO_COLLECTION_PATH}/${RESUME_DOC_ID}`,
         RESUME,
       ),
     }).subscribe({
@@ -217,4 +161,36 @@ export class Database {
     if (statuses.every((s) => s === 'complete')) return 'complete';
     return 'idle';
   });
+
+  dataFromLiveToEmulator() {
+    return this.firestoreService
+      .listenCollection$<PortfolioData>(PORTFOLIO_PROJECT_KEY, 'live', PORTFOLIO_COLLECTION_PATH)
+      .pipe(
+        switchMap((docs) =>
+          forkJoin(
+            docs.map((doc) =>
+              this.firestoreService
+                .setByPath$(
+                  PORTFOLIO_PROJECT_KEY,
+                  'emulator',
+                  `${PORTFOLIO_COLLECTION_PATH}/${doc.id}`,
+                  doc,
+                )
+                .pipe(
+                  tap(() => console.log(`Copied ${doc.id} to emulator`)),
+                  catchError((err) => {
+                    console.error(`Error copying ${doc.id}:`, err);
+                    return of(null);
+                  }),
+                ),
+            ),
+          ),
+        ),
+        catchError((err) => {
+          console.error('Error fetching live data:', err);
+          return of(null);
+        }),
+      )
+      .subscribe();
+  }
 }

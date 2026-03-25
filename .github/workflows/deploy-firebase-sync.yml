@@ -1,0 +1,105 @@
+name: Deploy firebase-sync (Cloud Run)
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-firebase-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SERVICE_NAME: firebase-sync
+  REGION: us-central1
+  GAR_REPOSITORY: cloud-run
+  NX_NO_CLOUD: true
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_DEPLOYER_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.8.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build firebase-sync
+        run: pnpm exec nx build firebase-sync --configuration=production
+
+      - name: Validate GCP auth inputs
+        run: |
+          if [ -z "${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
+            echo "Missing GCP_WORKLOAD_IDENTITY_PROVIDER (set as repo variable)."
+            exit 1
+          fi
+
+          if [ -z "${{ env.GCP_DEPLOYER_SERVICE_ACCOUNT }}" ]; then
+            echo "Missing GCP_DEPLOYER_SERVICE_ACCOUNT (set as repo variable)."
+            exit 1
+          fi
+
+          if [ -z "${{ env.GCP_PROJECT_ID }}" ]; then
+            echo "Missing GCP_PROJECT_ID (set as repo variable)."
+            exit 1
+          fi
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker auth for Artifact Registry
+        run: gcloud auth configure-docker "${{ env.REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build and push image
+        env:
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        run: |
+          docker build \
+            -f apps/firebase-sync/Dockerfile \
+            -t "$IMAGE_URI" \
+            .
+
+          docker push "$IMAGE_URI"
+
+      - name: Deploy to Cloud Run
+        env:
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        run: |
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --project="${{ env.GCP_PROJECT_ID }}" \
+            --image "$IMAGE_URI" \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --min-instances=0 \
+            --max-instances=2 \
+            --port=8080 \
+            --env-vars-file=apps/firebase-sync/.env.yaml

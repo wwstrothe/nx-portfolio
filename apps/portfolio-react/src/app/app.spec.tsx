@@ -1,6 +1,20 @@
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
+jest.mock('./data/database', () => ({
+  DatabaseProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useDatabase: () => ({
+    siteContent: {
+      title: 'William Strothe',
+      contactEmail: 'william.strothe@gmail.com',
+      socialLinks: {
+        linkedin: 'https://linkedin.com/in/william-strothe',
+        github: 'https://github.com/wwstrothe',
+      },
+    },
+  }),
+}));
+
 import App from './app';
 
 describe('App', () => {
@@ -8,19 +22,17 @@ describe('App', () => {
     const { baseElement } = render(
       <BrowserRouter>
         <App />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
     expect(baseElement).toBeTruthy();
   });
 
-  it('should have a greeting as the title', () => {
-    const { getAllByText } = render(
+  it('should render layout shell', () => {
+    const { getByRole } = render(
       <BrowserRouter>
         <App />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
-    expect(
-      getAllByText(new RegExp('Welcome portfolio-react', 'gi')).length > 0
-    ).toBeTruthy();
+    expect(getByRole('navigation')).toBeTruthy();
   });
 });

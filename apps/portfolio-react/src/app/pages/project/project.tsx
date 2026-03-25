@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Project as ProjectType } from '../../data/projects';
-import { PROJECTS } from '../../data/projects';
+import type { Project as ProjectType } from '../../data/database';
+import { useDatabase } from '../../data/database';
 import styles from './project.module.scss';
 
 const titleCase = (value: string) => {
@@ -21,14 +21,15 @@ const getStatusClassName = (status: ProjectType['status']) => {
 export function Project() {
   const navigate = useNavigate();
   const { slug } = useParams();
+  const { projects } = useDatabase();
 
   const project = useMemo(() => {
     if (!slug) {
       return null;
     }
 
-    return PROJECTS.find((item) => item.slug === slug) ?? null;
-  }, [slug]);
+    return (projects ?? []).find((item) => item.slug === slug) ?? null;
+  }, [slug, projects]);
 
   const goBack = () => {
     navigate('/projects');

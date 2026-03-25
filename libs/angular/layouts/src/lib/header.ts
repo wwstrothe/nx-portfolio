@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { PORTFOLIO_LAYOUT_DEFAULTS, PORTFOLIO_LAYOUT_LABELS } from '@portfolio/shared/config';
 import { ThemeToggle } from './theme-toggle';
 
 @Component({
@@ -9,7 +10,7 @@ import { ThemeToggle } from './theme-toggle';
     <header class="header">
       <div class="inner">
         <a class="brand" routerLink="/">{{ title() }}</a>
-        <button class="menu-btn" aria-label="Open navigation" (click)="menuOpen.emit()">
+        <button class="menu-btn" [attr.aria-label]="openNavigationLabel" (click)="menuOpen.emit()">
           <span class="material-symbols-outlined" aria-hidden="true">menu</span>
         </button>
 
@@ -128,8 +129,9 @@ import { ThemeToggle } from './theme-toggle';
   ],
 })
 export class Header {
-  title = input.required<string>();
-  links = input<Array<{ name: string; link: string }>>();
+  title = input<string>(PORTFOLIO_LAYOUT_DEFAULTS.brandLabel);
+  links = input<Array<{ name: string; link: string }>>(PORTFOLIO_LAYOUT_DEFAULTS.links);
   themeToggle = input<boolean>(true);
   menuOpen = output<void>();
+  protected readonly openNavigationLabel = PORTFOLIO_LAYOUT_LABELS.openNavigation;
 }
