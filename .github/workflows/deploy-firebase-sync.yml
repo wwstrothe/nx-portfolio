@@ -20,6 +20,9 @@ env:
   REGION: us-central1
   GAR_REPOSITORY: cloud-run
   NX_NO_CLOUD: true
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID != '' && secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && secrets.GCP_WORKLOAD_IDENTITY_PROVIDER || vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_DEPLOYER_SERVICE_ACCOUNT: ${{ secrets.GCP_DEPLOYER_SERVICE_ACCOUNT != '' && secrets.GCP_DEPLOYER_SERVICE_ACCOUNT || vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
 
 jobs:
   deploy:
@@ -44,11 +47,28 @@ jobs:
       - name: Build firebase-sync
         run: pnpm exec nx build firebase-sync --configuration=production
 
+      - name: Validate GCP auth inputs
+        run: |
+          if [ -z "${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
+            echo "Missing GCP_WORKLOAD_IDENTITY_PROVIDER (set as repo secret or variable)."
+            exit 1
+          fi
+
+          if [ -z "${{ env.GCP_DEPLOYER_SERVICE_ACCOUNT }}" ]; then
+            echo "Missing GCP_DEPLOYER_SERVICE_ACCOUNT (set as repo secret or variable)."
+            exit 1
+          fi
+
+          if [ -z "${{ env.GCP_PROJECT_ID }}" ]; then
+            echo "Missing GCP_PROJECT_ID (set as repo secret or variable)."
+            exit 1
+          fi
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_DEPLOYER_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -60,28 +80,28 @@ jobs:
         run: |
           gcloud artifacts repositories describe "${{ env.GAR_REPOSITORY }}" \
             --location="${{ env.REGION }}" \
-            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --project="${{ env.GCP_PROJECT_ID }}" \
           || gcloud artifacts repositories create "${{ env.GAR_REPOSITORY }}" \
             --repository-format=docker \
             --location="${{ env.REGION }}" \
-            --project="${{ secrets.GCP_PROJECT_ID }}"
+            --project="${{ env.GCP_PROJECT_ID }}"
 
       - name: Build and push image with Cloud Build
         env:
-          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
         run: |
           gcloud builds submit \
-            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --project="${{ env.GCP_PROJECT_ID }}" \
             --tag "$IMAGE_URI" \
             --file apps/firebase-sync/Dockerfile \
             .
 
       - name: Deploy to Cloud Run
         env:
-          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
         run: |
           gcloud run deploy "${{ env.SERVICE_NAME }}" \
-            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --project="${{ env.GCP_PROJECT_ID }}" \
             --image "$IMAGE_URI" \
             --region "${{ env.REGION }}" \
             --platform managed \
