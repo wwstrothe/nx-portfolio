@@ -7,7 +7,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:4201',
   'https://william-strothe.pages.dev',
   'https://william-strothe-react.pages.dev',
-  'https://*.william-strothe-react.pages.dev',
+  'https://beta.william-strothe.pages.dev',
+  'https://beta.william-strothe-react.pages.dev',
 ];
 
 function getAllowedOrigins(): string[] {
