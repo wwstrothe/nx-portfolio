@@ -19,6 +19,7 @@ env:
   SERVICE_NAME: firebase-sync
   REGION: us-central1
   GAR_REPOSITORY: cloud-run
+  NX_NO_CLOUD: true
 
 jobs:
   deploy:
