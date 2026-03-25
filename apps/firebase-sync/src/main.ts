@@ -2,13 +2,70 @@ import { workspaceConfig, type FirebaseProjectKey } from '@portfolio/shared/conf
 import express from 'express';
 import { getFirestore, type Target } from './firebase-admin';
 
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:4200',
+  'http://localhost:4201',
+  'https://william-strothe.pages.dev',
+  'https://william-strothe-react.pages.dev',
+  'https://*.william-strothe-react.pages.dev',
+];
+
+function getAllowedOrigins(): string[] {
+  const configuredOrigins = process.env.ALLOWED_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return configuredOrigins?.length ? configuredOrigins : DEFAULT_ALLOWED_ORIGINS;
+}
+
+function isOriginAllowed(origin: string, allowedOrigins: string[]): boolean {
+  return allowedOrigins.some((allowedOrigin) => {
+    if (!allowedOrigin.includes('*')) {
+      return allowedOrigin === origin;
+    }
+
+    try {
+      const requestUrl = new URL(origin);
+      const allowedUrl = new URL(allowedOrigin);
+
+      if (requestUrl.protocol !== allowedUrl.protocol) {
+        return false;
+      }
+
+      const allowedHost = allowedUrl.hostname;
+      if (!allowedHost.startsWith('*.')) {
+        return false;
+      }
+
+      const suffix = allowedHost.slice(1);
+      return requestUrl.hostname.endsWith(suffix) && requestUrl.hostname !== allowedHost.slice(2);
+    } catch {
+      return false;
+    }
+  });
+}
+
+function getDefaultTarget(): Target {
+  const configuredTarget = process.env.FIREBASE_TARGET as Target | undefined;
+
+  if (configuredTarget === 'emulator') {
+    return configuredTarget;
+  }
+
+  if (configuredTarget && configuredTarget in workspaceConfig.firebase.projects) {
+    return configuredTarget;
+  }
+
+  return process.env.NODE_ENV === 'production' ? 'personal-project' : 'emulator';
+}
+
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = new Set(['http://localhost:4200', 'http://localhost:4201']);
+  const allowedOrigins = getAllowedOrigins();
 
-  if (origin && allowedOrigins.has(origin)) {
+  if (origin && isOriginAllowed(origin, allowedOrigins)) {
     res.header('Access-Control-Allow-Origin', origin);
   }
 
@@ -110,7 +167,7 @@ app.get('/collections', async (req, res) => {
  * POST /contact?target=emulator
  */
 app.post('/contact', async (req, res) => {
-  const target = (req.query.target as Target | undefined) ?? 'emulator';
+  const target = (req.query.target as Target | undefined) ?? getDefaultTarget();
   const parsed = parseContactSubmission(req.body);
 
   if (parsed.error) {
@@ -139,7 +196,7 @@ app.post('/contact', async (req, res) => {
  * GET /contact/submissions?target=emulator&limit=20
  */
 app.get('/contact/submissions', async (req, res) => {
-  const target = (req.query.target as Target | undefined) ?? 'emulator';
+  const target = (req.query.target as Target | undefined) ?? getDefaultTarget();
   const requestedLimit = Number(req.query.limit ?? 20);
   const limit = Number.isFinite(requestedLimit)
     ? Math.min(Math.max(Math.trunc(requestedLimit), 1), 100)

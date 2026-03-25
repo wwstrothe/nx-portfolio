@@ -75,7 +75,7 @@ export function Contact() {
     setErrorMessage('');
 
     try {
-      const response = await fetch(`${getApiBaseUrl()}/contact?target=emulator`, {
+      const response = await fetch(`${getApiBaseUrl()}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

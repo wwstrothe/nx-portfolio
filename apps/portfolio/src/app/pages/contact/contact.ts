@@ -96,10 +96,7 @@ export default class Contact {
     this.errorMessage.set('');
 
     this.http
-      .post<ContactApiResponse>(
-        `${this.getApiBaseUrl()}/contact?target=emulator`,
-        this.form.getRawValue(),
-      )
+      .post<ContactApiResponse>(`${this.getApiBaseUrl()}/contact`, this.form.getRawValue())
       .subscribe({
         next: () => {
           this.status.set('success');
