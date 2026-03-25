@@ -190,7 +190,7 @@ function getApiBaseUrl(): string {
     return 'http://localhost:3333';
   }
 
-  return '';
+  return 'https://firebase-sync-369124476464.us-central1.run.app';
 }
 
 export default Contact;
