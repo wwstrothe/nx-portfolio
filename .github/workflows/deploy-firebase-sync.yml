@@ -20,9 +20,9 @@ env:
   REGION: us-central1
   GAR_REPOSITORY: cloud-run
   NX_NO_CLOUD: true
-  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID != '' && vars.GCP_PROJECT_ID || secrets.GCP_PROJECT_ID }}
-  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-  GCP_DEPLOYER_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT != '' && vars.GCP_DEPLOYER_SERVICE_ACCOUNT || secrets.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_DEPLOYER_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
 
 jobs:
   deploy:
@@ -50,52 +50,19 @@ jobs:
       - name: Validate GCP auth inputs
         run: |
           if [ -z "${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
-            echo "Missing GCP_WORKLOAD_IDENTITY_PROVIDER (set as repo secret or variable)."
+            echo "Missing GCP_WORKLOAD_IDENTITY_PROVIDER (set as repo variable)."
             exit 1
           fi
 
           if [ -z "${{ env.GCP_DEPLOYER_SERVICE_ACCOUNT }}" ]; then
-            echo "Missing GCP_DEPLOYER_SERVICE_ACCOUNT (set as repo secret or variable)."
+            echo "Missing GCP_DEPLOYER_SERVICE_ACCOUNT (set as repo variable)."
             exit 1
           fi
 
           if [ -z "${{ env.GCP_PROJECT_ID }}" ]; then
-            echo "Missing GCP_PROJECT_ID (set as repo secret or variable)."
+            echo "Missing GCP_PROJECT_ID (set as repo variable)."
             exit 1
           fi
-
-      - name: Debug GitHub OIDC claims
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Provider configured in workflow: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}"
-
-          AUDIENCE="https://iam.googleapis.com/${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}"
-          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
-            echo "Missing GitHub OIDC request environment variables."
-            exit 1
-          fi
-
-          OIDC_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
-          TOKEN_RESPONSE="$(curl -sS -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${OIDC_URL}")"
-          ID_TOKEN="$(echo "$TOKEN_RESPONSE" | jq -r '.value')"
-
-          if [ -z "$ID_TOKEN" ] || [ "$ID_TOKEN" = "null" ]; then
-            echo "Failed to acquire OIDC token from GitHub Actions."
-            echo "$TOKEN_RESPONSE"
-            exit 1
-          fi
-
-          PAYLOAD_B64="$(echo "$ID_TOKEN" | cut -d '.' -f2 | tr '_-' '/+')"
-          PAYLOAD_JSON="$(echo "$PAYLOAD_B64" | base64 -d 2>/dev/null || true)"
-
-          if [ -z "$PAYLOAD_JSON" ]; then
-            echo "Failed to decode JWT payload."
-            exit 1
-          fi
-
-          echo "OIDC claim summary:"
-          echo "$PAYLOAD_JSON" | jq '{sub, repository, repository_owner, ref, event_name, workflow_ref, aud}'
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
