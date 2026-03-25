@@ -102,4 +102,6 @@ jobs:
             --min-instances=0 \
             --max-instances=2 \
             --port=8080 \
-            --set-env-vars=NODE_ENV=production,FIREBASE_TARGET=personal-project,ALLOWED_ORIGINS='https://william-strothe.pages.dev,https://*.william-strothe.pages.dev,https://william-strothe-react.pages.dev,https://*.william-strothe-react.pages.dev'
+            --update-env-vars=NODE_ENV=production \
+            --update-env-vars=FIREBASE_TARGET=personal-project \
+            --update-env-vars=ALLOWED_ORIGINS="https://william-strothe.pages.dev,https://*.william-strothe.pages.dev,https://william-strothe-react.pages.dev,https://*.william-strothe-react.pages.dev"
