@@ -1,5 +1,6 @@
 import { Component, HostListener, Signal, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DpadComponent } from '../../shared/dpad/dpad';
 import { GamesDatabase } from '../../data/games-database';
 import { Game2048ScoreEntry, GridSize2048 } from '../../data/leaderboard.types';
 
@@ -45,7 +46,7 @@ const GRID_OPTIONS: GridOption[] = [
 
 @Component({
   selector: 'games-game2048',
-  imports: [RouterLink],
+  imports: [RouterLink, DpadComponent],
   template: `
     <div class="g2048">
       <div class="g2048__topbar">
@@ -62,7 +63,11 @@ const GRID_OPTIONS: GridOption[] = [
         </div>
       </div>
 
-      <div class="g2048__arena" [style.--n]="gridDimension()">
+      <div
+        class="g2048__arena"
+        [style.--n]="gridDimension()"
+        (touchstart)="onTouchStart($event)"
+        (touchend)="onTouchEnd($event)">
         <div class="g2048__grid">
           @for (cell of gridCells(); track $index) {
             <div class="g2048__cell"></div>
@@ -78,7 +83,7 @@ const GRID_OPTIONS: GridOption[] = [
             @if (gameState() === 'idle') {
               <h2>2048</h2>
               <p>Combine tiles to reach 2048!</p>
-              <p class="g2048__hint">Arrow Keys / WASD to move</p>
+              <p class="g2048__hint">Arrow Keys / WASD · Swipe or D-pad on mobile</p>
             } @else if (gameState() === 'won') {
               <h2>You Win!</h2>
               <p class="g2048__final-score">Score: {{ score() }}</p>
@@ -154,7 +159,7 @@ const GRID_OPTIONS: GridOption[] = [
               }
             }
 
-            @if (gameState() === 'idle' || gameState() === 'over') {
+            @if (gameState() === 'idle') {
               <div class="g2048__settings">
                 <div class="g2048__setting-group">
                   <span class="g2048__setting-label">Grid</span>
@@ -176,13 +181,21 @@ const GRID_OPTIONS: GridOption[] = [
               <button class="g2048__start-btn" (click)="startGame()">Start Game</button>
             } @else if (gameState() === 'over') {
               <button class="g2048__start-btn" (click)="startGame()">Play Again</button>
+              <button class="g2048__secondary-btn" (click)="goToMenu()">Change Settings</button>
             }
           </div>
         }
       </div>
 
+      @if (gameState() === 'playing') {
+        <div class="g2048__mobile-controls">
+          <games-dpad (dirPress)="onDpadPress($event)" />
+        </div>
+      }
+
       <footer class="g2048__footer">
-        <span>Arrow Keys / WASD to move</span>
+        <span class="g2048__footer-kb">Arrow Keys / WASD to move</span>
+        <span class="g2048__footer-touch">Swipe or use D-pad to move</span>
         <a routerLink="/leaderboard/game2048" class="g2048__lb-link">Leaderboard</a>
       </footer>
     </div>
@@ -228,6 +241,8 @@ export default class Game2048 {
 
   private _nextId = 0;
   private _hasWon = false;
+  private touchStartX = 0;
+  private touchStartY = 0;
 
   protected tileClass(tile: Tile): string {
     let cls = 'g2048__tile';
@@ -272,6 +287,10 @@ export default class Game2048 {
     this._gameState.set('playing');
   }
 
+  protected goToMenu(): void {
+    this._gameState.set('idle');
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (document.activeElement?.tagName === 'INPUT') return;
@@ -296,6 +315,28 @@ export default class Game2048 {
     if (!dir) return;
     if (event.key.startsWith('Arrow')) event.preventDefault();
 
+    this.executeMove(dir);
+  }
+
+  protected onDpadPress(dir: MoveDir): void {
+    if (this._gameState() !== 'playing') return;
+    this.executeMove(dir);
+  }
+
+  protected onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.touches[0].clientX;
+    this.touchStartY = event.touches[0].clientY;
+  }
+
+  protected onTouchEnd(event: TouchEvent): void {
+    if (this._gameState() !== 'playing') return;
+    const dx = event.changedTouches[0].clientX - this.touchStartX;
+    const dy = event.changedTouches[0].clientY - this.touchStartY;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    if (Math.max(absDx, absDy) < 30) return;
+    const dir: MoveDir =
+      absDx > absDy ? (dx > 0 ? 'RIGHT' : 'LEFT') : (dy > 0 ? 'DOWN' : 'UP');
     this.executeMove(dir);
   }
 

@@ -54,12 +54,22 @@
     letter-spacing: 0.05em;
     color: var(--color-text-secondary);
     border-bottom: 2px solid var(--color-border);
+    white-space: nowrap;
   }
 
   td {
     padding: tokens.$spacing-sm tokens.$spacing-md;
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
+  }
+
+  @media (max-width: 480px) {
+    font-size: tokens.$font-size-xs;
+
+    th,
+    td {
+      padding: tokens.$spacing-xs tokens.$spacing-sm;
+    }
   }
 
   tr:last-child td {
@@ -80,6 +90,10 @@
 .lb-rank {
   font-weight: tokens.$font-weight-semibold;
   width: 2.5rem;
+
+  @media (max-width: 480px) {
+    width: 1.5rem;
+  }
 }
 
 .lb-name {
@@ -102,4 +116,8 @@
 .lb-date {
   color: var(--color-text-secondary);
   white-space: nowrap;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
 }

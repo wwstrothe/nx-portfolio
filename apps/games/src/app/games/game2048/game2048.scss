@@ -30,6 +30,12 @@
   padding: tokens.$spacing-lg tokens.$spacing-md;
   gap: tokens.$spacing-md;
 
+  @media (pointer: coarse) {
+    padding-top: tokens.$spacing-xs;
+    padding-bottom: tokens.$spacing-xs;
+    gap: tokens.$spacing-xs;
+  }
+
   &__topbar {
     display: flex;
     align-items: center;
@@ -82,6 +88,13 @@
     border-radius: tokens.$border-radius-lg;
     box-shadow: tokens.$shadow-xl;
     overflow: hidden;
+    touch-action: none;
+
+    @media (pointer: coarse) {
+      // Also cap by available viewport height so content fits without scrolling.
+      // 300px ≈ topbar + reduced padding/gaps + D-pad clearance at bottom.
+      width: min(520px, 95vw, calc(100dvh - 300px));
+    }
   }
 
   &__grid {
@@ -150,6 +163,28 @@
     padding: tokens.$spacing-lg;
     overflow-y: auto;
     border-radius: tokens.$border-radius-lg;
+
+    @media (pointer: fine) {
+      position: fixed;
+      inset: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(460px, 90vw);
+      max-height: 90vh;
+      border-radius: tokens.$border-radius-lg;
+      z-index: 40;
+      justify-content: safe center;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
+    }
+
+    @media (pointer: coarse) {
+      position: fixed;
+      z-index: 40;
+      border-radius: 0;
+      justify-content: safe center;
+    }
 
     h2 {
       font-size: tokens.$font-size-3xl;
@@ -352,6 +387,22 @@
     color: tokens.$color-gray-400;
   }
 
+  // ── Mobile controls ──────────────────────────────────────────────────────────
+
+  &__mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: max(#{tokens.$spacing-md}, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    justify-content: center;
+
+    @media (pointer: coarse) {
+      display: flex;
+    }
+  }
+
   // ── Footer ───────────────────────────────────────────────────────────────────
 
   &__footer {
@@ -360,6 +411,24 @@
     font-size: tokens.$font-size-xs;
     color: var(--color-text-secondary);
     align-items: center;
+
+    @media (pointer: coarse) {
+      display: none;
+    }
+  }
+
+  &__footer-touch {
+    display: none;
+
+    @media (pointer: coarse) {
+      display: inline;
+    }
+  }
+
+  &__footer-kb {
+    @media (pointer: coarse) {
+      display: none;
+    }
   }
 
   &__lb-link {

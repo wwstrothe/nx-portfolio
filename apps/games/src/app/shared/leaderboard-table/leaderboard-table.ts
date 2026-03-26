@@ -37,7 +37,7 @@ import { ColumnDef, LeaderboardEntry } from '../../data/leaderboard.types';
             @for (col of extraColumns(); track col.header) {
               <th>{{ col.header }}</th>
             }
-            <th>Date</th>
+            <th class="lb-date">Date</th>
           </tr>
         </thead>
         <tbody>

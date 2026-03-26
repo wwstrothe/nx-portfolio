@@ -7,6 +7,12 @@
   padding: tokens.$spacing-lg tokens.$spacing-md;
   gap: tokens.$spacing-md;
 
+  @media (pointer: coarse) {
+    padding-top: tokens.$spacing-xs;
+    padding-bottom: tokens.$spacing-xs;
+    gap: tokens.$spacing-xs;
+  }
+
   &__topbar {
     display: flex;
     align-items: center;
@@ -54,6 +60,13 @@
     display: block;
     max-width: 100%;
     height: auto;
+    touch-action: none;
+
+    @media (pointer: coarse) {
+      // Cap by viewport height so everything fits without scrolling.
+      // 330px ≈ topbar + reduced padding/gaps + pause btn + D-pad clearance.
+      max-width: min(100%, calc(100dvh - 330px));
+    }
   }
 
   &__overlay {
@@ -68,6 +81,28 @@
     backdrop-filter: blur(4px);
     padding: tokens.$spacing-lg;
     overflow-y: auto;
+
+    @media (pointer: fine) {
+      position: fixed;
+      inset: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(460px, 90vw);
+      max-height: 90vh;
+      border-radius: tokens.$border-radius-lg;
+      z-index: 40;
+      justify-content: safe center;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
+    }
+
+    @media (pointer: coarse) {
+      position: fixed;
+      z-index: 40;
+      border-radius: 0;
+      justify-content: safe center;
+    }
 
     h2 {
       font-size: tokens.$font-size-3xl;
@@ -265,6 +300,43 @@
     color: tokens.$color-gray-400;
   }
 
+  // ── Mobile controls ─────────────────────────────────────────────────────────
+
+  &__mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: max(#{tokens.$spacing-md}, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    flex-direction: column;
+    align-items: center;
+    gap: tokens.$spacing-sm;
+
+    @media (pointer: coarse) {
+      display: flex;
+    }
+  }
+
+  &__pause-btn {
+    padding: tokens.$spacing-xs tokens.$spacing-xl;
+    font-size: tokens.$font-size-sm;
+    font-weight: tokens.$font-weight-medium;
+    border-radius: tokens.$border-radius-md;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(15, 15, 15, 0.6);
+    backdrop-filter: blur(6px);
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color tokens.$transition-fast;
+
+    &:active {
+      background: rgba(60, 60, 60, 0.85);
+    }
+  }
+
   // ── Footer ──────────────────────────────────────────────────────────────────
 
   &__footer {
@@ -273,6 +345,24 @@
     font-size: tokens.$font-size-xs;
     color: var(--color-text-secondary);
     align-items: center;
+
+    @media (pointer: coarse) {
+      display: none;
+    }
+  }
+
+  &__footer-touch {
+    display: none;
+
+    @media (pointer: coarse) {
+      display: inline;
+    }
+  }
+
+  &__footer-kb {
+    @media (pointer: coarse) {
+      display: none;
+    }
   }
 
   &__lb-link {

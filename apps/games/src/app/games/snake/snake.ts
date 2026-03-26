@@ -10,6 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DpadComponent } from '../../shared/dpad/dpad';
 import { GamesDatabase } from '../../data/games-database';
 import { SnakeScoreEntry } from '../../data/leaderboard.types';
 
@@ -55,7 +56,7 @@ const SPEED_OPTIONS: SpeedOption[] = [
 
 @Component({
   selector: 'games-snake',
-  imports: [RouterLink],
+  imports: [RouterLink, DpadComponent],
   template: `
     <div class="snake">
       <div class="snake__topbar">
@@ -67,13 +68,19 @@ const SPEED_OPTIONS: SpeedOption[] = [
       </div>
 
       <div class="snake__arena">
-        <canvas #canvas [width]="canvasSize()" [height]="canvasSize()" class="snake__canvas"></canvas>
+        <canvas
+          #canvas
+          [width]="canvasSize()"
+          [height]="canvasSize()"
+          class="snake__canvas"
+          (touchstart)="onTouchStart($event)"
+          (touchend)="onTouchEnd($event)"></canvas>
 
         @if (gameState() !== 'playing') {
           <div class="snake__overlay">
             @if (gameState() === 'idle') {
               <h2>Snake</h2>
-              <p>Use arrow keys or WASD to move</p>
+              <p>Arrow keys / WASD · Swipe or D-pad on mobile</p>
             } @else if (gameState() === 'paused') {
               <h2>Paused</h2>
               <button (click)="resumeGame()">Resume</button>
@@ -118,7 +125,7 @@ const SPEED_OPTIONS: SpeedOption[] = [
               }
             }
 
-            @if (gameState() !== 'paused') {
+            @if (gameState() === 'idle') {
               <div class="snake__settings">
                 <div class="snake__setting-group">
                   <span class="snake__setting-label">Grid</span>
@@ -153,14 +160,22 @@ const SPEED_OPTIONS: SpeedOption[] = [
               <button class="snake__start-btn" (click)="startGame()">Start Game</button>
             } @else if (gameState() === 'over') {
               <button class="snake__start-btn" (click)="startGame()">Play Again</button>
+              <button class="snake__secondary-btn" (click)="goToMenu()">Change Settings</button>
             }
           </div>
         }
       </div>
 
+      @if (gameState() === 'playing') {
+        <div class="snake__mobile-controls">
+          <button class="snake__pause-btn" (click)="pauseGame()">⏸ Pause</button>
+          <games-dpad (dirPress)="onDpadPress($event)" />
+        </div>
+      }
+
       <footer class="snake__footer">
-        <span>Arrow Keys / WASD to move</span>
-        <span>P or Escape to pause</span>
+        <span class="snake__footer-kb">Arrow Keys / WASD · P to pause</span>
+        <span class="snake__footer-touch">Swipe or use D-pad · tap Pause</span>
         <a routerLink="/leaderboard/snake" class="snake__lb-link">Leaderboard</a>
       </footer>
     </div>
@@ -197,6 +212,8 @@ export default class Snake implements OnDestroy {
   private directionQueue: Direction[] = [];
   private loopId: ReturnType<typeof setInterval> | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
+  private touchStartX = 0;
+  private touchStartY = 0;
 
   private get cols(): number {
     return GRID_OPTIONS.find((o) => o.value === this._gridSize())?.cols ?? 20;
@@ -311,10 +328,36 @@ export default class Snake implements OnDestroy {
 
     if (key.startsWith('Arrow')) event.preventDefault();
 
+    this.enqueueDirection(newDir);
+  }
+
+  protected onDpadPress(dir: Direction): void {
+    if (this._gameState() !== 'playing') return;
+    this.enqueueDirection(dir);
+  }
+
+  protected onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.touches[0].clientX;
+    this.touchStartY = event.touches[0].clientY;
+  }
+
+  protected onTouchEnd(event: TouchEvent): void {
+    if (this._gameState() !== 'playing') return;
+    const dx = event.changedTouches[0].clientX - this.touchStartX;
+    const dy = event.changedTouches[0].clientY - this.touchStartY;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    if (Math.max(absDx, absDy) < 30) return;
+    const dir: Direction =
+      absDx > absDy ? (dx > 0 ? 'RIGHT' : 'LEFT') : (dy > 0 ? 'DOWN' : 'UP');
+    this.enqueueDirection(dir);
+  }
+
+  private enqueueDirection(dir: Direction): void {
     if (this.directionQueue.length < 2) {
       const last = this.directionQueue[this.directionQueue.length - 1] ?? this.direction;
-      if (!this.isOpposite(newDir, last)) {
-        this.directionQueue.push(newDir);
+      if (!this.isOpposite(dir, last)) {
+        this.directionQueue.push(dir);
       }
     }
   }
@@ -353,7 +396,7 @@ export default class Snake implements OnDestroy {
     }
   }
 
-  private pauseGame(): void {
+  protected pauseGame(): void {
     this.stopLoop();
     this._gameState.set('paused');
   }
