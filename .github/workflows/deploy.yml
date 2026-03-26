@@ -33,7 +33,7 @@ jobs:
             distDir: dist/apps/portfolio-react
           - nxApp: games
             cfProject: william-strothe-games
-            distDir: dist/apps/games/dist
+            distDir: dist/apps/games/browser
 
     steps:
       - uses: actions/checkout@v4
