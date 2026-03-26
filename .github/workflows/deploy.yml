@@ -31,6 +31,9 @@ jobs:
           - nxApp: portfolio-react
             cfProject: william-strothe-react
             distDir: dist/apps/portfolio-react
+          - nxApp: games
+            cfProject: william-strothe-games
+            distDir: dist/apps/games/dist
 
     steps:
       - uses: actions/checkout@v4
